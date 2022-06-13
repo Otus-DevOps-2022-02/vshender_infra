@@ -6,6 +6,7 @@ vshender Infra repository
 ## Homework #4: play-travis
 
 - Added a pre-commit hook.
+- Added Github PR template.
 
 
 Install a pre-commit hook:
