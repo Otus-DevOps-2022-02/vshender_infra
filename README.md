@@ -8,6 +8,7 @@ vshender Infra repository
 - Added a pre-commit hook.
 - Added a Github PR template.
 - Enabled the Slack integration.
+- Added Github actions.
 
 
 Install a pre-commit hook:
