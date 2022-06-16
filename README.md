@@ -162,6 +162,7 @@ To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.i
 ## Homework #6: play-travis
 
 - Installed and configured the `yc` CLI utility.
+- Created a VM for the application.
 
 
 Related Yandex Cloud documentation:
@@ -203,4 +204,30 @@ compute-default-zone: ru-central1-a
 
 $ yc config profile list
 default ACTIVE
+```
+
+Create a new VM instance:
+```
+$ yc compute instance create \
+  --name reddit-app \
+  --hostname reddit-app \
+  --memory=4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1604-lts,size=10GB \
+  --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+  --metadata serial-port-enable=1 \
+  --ssh-key ~/.ssh/appuser.pub
+...
+
+$ yc compute instance list
++----------------------+------------+---------------+---------+---------------+-------------+
+|          ID          |    NAME    |    ZONE ID    | STATUS  | EXTERNAL IP   | INTERNAL IP |
++----------------------+------------+---------------+---------+---------------+-------------+
+| fhmphnrc1ifveo9j143e | reddit-app | ru-central1-a | RUNNING | 51.250.85.101 | 10.128.0.14 |
++----------------------+------------+---------------+---------+---------------+-------------+
+```
+
+The created host's IP address and the port for the application:
+```
+testapp_IP = 51.250.85.101
+testapp_port = 9292
 ```
