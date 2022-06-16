@@ -129,7 +129,7 @@ Host someinternalhost
 
 Install and setup `pritunl` on the `bastion` VM:
 ```
-$ scp setupvpn.sh bastion:/home/appuser
+$ scp VPN/setupvpn.sh bastion:/home/appuser
 setupvpn.sh
 
 $ ssh bastion
