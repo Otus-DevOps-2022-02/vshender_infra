@@ -30,6 +30,7 @@ Subscribe a Slack channel to a Github repository:
 - Gererated new SSH keys.
 - Created two VMs (`bastion` and `someinternalhost`).
 - Configured access to the `bastion` and `someinternalhost` VMs by aliases.
+- Configured access to `someinternalhost` via VPN (based on [Pritunl](https://pritunl.com/)).
 
 
 Generate SSH authentication keys:
@@ -124,3 +125,32 @@ Host someinternalhost
     User appuser
     ProxyJump bastion
 ```
+
+Install and setup `pritunl` on the `bastion` VM:
+```
+$ scp setupvpn.sh bastion:/home/appuser
+setupvpn.sh
+
+$ ssh bastion
+Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-117-generic x86_64)
+...
+
+appuser@bastion:~$ sudo bash setupvpn.sh
+...
+
+appuser@bastion:~$ # open in browser http://51.250.77.242/setup
+
+appuser@bastion:~$ sudo pritunl setup-key
+...
+
+appuser@bastion:~$ sudo pritunl default-password
+Administrator default password:
+  username: "pritunl"
+  password: "..."
+```
+
+Pritunl user:
+- username: test
+- PIN: 6214157507237678334670591556762
+
+See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connecting) for instructions.
