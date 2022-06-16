@@ -29,6 +29,7 @@ Subscribe a Slack channel to a Github repository:
 - Created a Yandex Cloud account.
 - Gererated new SSH keys.
 - Created two VMs (`bastion` and `someinternalhost`).
+- Configured access to the `bastion` and `someinternalhost` VMs by aliases.
 
 
 Generate SSH authentication keys:
@@ -99,3 +100,27 @@ appuser@someinternalhost:~$
 Useful links:
 - [SSH Agent Explained](https://smallstep.com/blog/ssh-agent-explained/)
 - [SSH to remote hosts through a proxy or bastion with ProxyJump](https://www.redhat.com/sysadmin/ssh-proxy-bastion-proxyjump)
+
+Contents of the `.ssh/config` file for accessing the VMs using aliases:
+```
+Host bastion
+    Hostname 51.250.77.242
+    User appuser
+    IdentityFile ~/.ssh/appuser
+Host someinternalhost
+    User appuser
+    IdentityFile ~/.ssh/appuser
+    ProxyCommand ssh -q bastion nc -q0 10.128.0.19 22
+```
+
+or
+```
+Host bastion
+    Hostname 51.250.77.242
+    User appuser
+    IdentityFile ~/.ssh/appuser
+Host someinternalhost
+    Hostname 10.128.0.19
+    User appuser
+    ProxyJump bastion
+```
