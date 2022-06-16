@@ -157,3 +157,50 @@ Pritunl user:
 See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connecting) for instructions.
 
 To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.io" in "Settings -> Lets Encrypt Domain".
+
+
+## Homework #6: play-travis
+
+- Installed and configured the `yc` CLI utility.
+
+
+Related Yandex Cloud documentation:
+
+- [Install CLI](https://cloud.yandex.ru/docs/cli/operations/install-cli)
+- [Profile Create](https://cloud.yandex.ru/docs/cli/operations/profile/profile-create)
+
+Create a Yandex Cloud profile:
+```
+$ yc init
+Welcome! This command will take you through the configuration process.
+Please go to https://oauth.yandex.ru/authorize?response_type=token&client_id=... in order to obtain OAuth token.
+
+Please enter OAuth token: ...
+You have one cloud available: 'otus-vadimshendergmailcom' (id = ...). It is going to be used by default.
+Please choose folder to use:
+ [1] default (id = ...)
+ [2] infra (id = ...)
+ [3] Create a new folder
+Please enter your numeric choice: 2
+Your current folder has been set to 'default' (id = ...).
+Do you want to configure a default Compute zone? [Y/n] y
+Which zone do you want to use as a profile default?
+ [1] ru-central1-a
+ [2] ru-central1-b
+ [3] ru-central1-c
+ [4] Don't set default zone
+Please enter your numeric choice: 1
+Your profile default Compute zone has been set to 'ru-central1-a'.
+```
+
+Check `yc` configuration:
+```
+$ yc config list
+token: ...
+cloud-id: ...
+folder-id: ...
+compute-default-zone: ru-central1-a
+
+$ yc config profile list
+default ACTIVE
+```
