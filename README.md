@@ -31,6 +31,7 @@ Subscribe a Slack channel to a Github repository:
 - Created two VMs (`bastion` and `someinternalhost`).
 - Configured access to the `bastion` and `someinternalhost` VMs by aliases.
 - Configured access to `someinternalhost` via VPN (based on [Pritunl](https://pritunl.com/)).
+- Configured a SSL certificate.
 
 
 Generate SSH authentication keys:
@@ -154,3 +155,5 @@ Pritunl user:
 - PIN: 6214157507237678334670591556762
 
 See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connecting) for instructions.
+
+To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.io" in "Settings -> Lets Encrypt Domain".
