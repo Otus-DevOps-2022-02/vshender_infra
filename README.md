@@ -164,6 +164,7 @@ To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.i
 - Installed and configured the `yc` CLI utility.
 - Created a VM for the application.
 - Added the application deployment scripts.
+- Added a metadata file that deploys the application on VM instance creation.
 
 
 Related Yandex Cloud documentation:
@@ -220,25 +221,25 @@ $ yc compute instance create \
 ...
 
 $ yc compute instance list
-+----------------------+------------+---------------+---------+---------------+-------------+
-|          ID          |    NAME    |    ZONE ID    | STATUS  | EXTERNAL IP   | INTERNAL IP |
-+----------------------+------------+---------------+---------+---------------+-------------+
-| fhmphnrc1ifveo9j143e | reddit-app | ru-central1-a | RUNNING | 51.250.85.101 | 10.128.0.14 |
-+----------------------+------------+---------------+---------+---------------+-------------+
++----------------------+------------+---------------+---------+--------------+-------------+
+|          ID          |    NAME    |    ZONE ID    | STATUS  | EXTERNAL IP  | INTERNAL IP |
++----------------------+------------+---------------+---------+--------------+-------------+
+| fhmphnrc1ifveo9k059k | reddit-app | ru-central1-a | RUNNING | 51.250.94.42 | 10.128.0.17 |
++----------------------+------------+---------------+---------+--------------+-------------+
 ```
 
 The created host's IP address and the port for the application:
 ```
-testapp_IP = 51.250.85.101
+testapp_IP = 51.250.94.42
 testapp_port = 9292
 ```
 
 Install the required dependencies and deploy the application:
 ```
-$ scp *.sh yc-user@51.250.85.101:/home/yc-user
+$ scp *.sh yc-user@51.250.94.42:/home/yc-user
 ...
 
-$ ssh yc-user@51.250.85.101
+$ ssh yc-user@51.250.94.42
 Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-142-generic x86_64)
 ...
 
@@ -261,5 +262,18 @@ yc-user@reddit-app:~$ sudo systemctl status mongod
 ...
 
 yc-user@reddit-app:~$ ./deploy.sh
+...
+```
+
+Create a new VM instance providing the metadata that deploys the application:
+```
+$ yc compute instance create \
+  --name reddit-app \
+  --hostname reddit-app \
+  --memory=4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1604-lts,size=10GB \
+  --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+  --metadata serial-port-enable=1 \
+  --metadata-from-file user-data=metadata.yaml
 ...
 ```
