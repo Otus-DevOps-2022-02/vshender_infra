@@ -163,6 +163,7 @@ To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.i
 
 - Installed and configured the `yc` CLI utility.
 - Created a VM for the application.
+- Added the application deployment scripts.
 
 
 Related Yandex Cloud documentation:
@@ -230,4 +231,35 @@ The created host's IP address and the port for the application:
 ```
 testapp_IP = 51.250.85.101
 testapp_port = 9292
+```
+
+Install the required dependencies and deploy the application:
+```
+$ scp *.sh yc-user@51.250.85.101:/home/yc-user
+...
+
+$ ssh yc-user@51.250.85.101
+Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-142-generic x86_64)
+...
+
+yc-user@reddit-app:~$ ./install_ruby.sh
+...
+
+yc-user@reddit-app:~$ ruby -v
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+
+yc-user@reddit-app:~$ bundler -v
+Bundler version 1.11.2
+
+yc-user@reddit-app:~$ ./install_mongodb.sh
+...
+
+yc-user@reddit-app:~$ sudo systemctl status mongod
+● mongod.service - MongoDB Database Server
+   Loaded: loaded (/lib/systemd/system/mongod.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-06-19 18:24:46 UTC; 15s ago
+...
+
+yc-user@reddit-app:~$ ./deploy.sh
+...
 ```
