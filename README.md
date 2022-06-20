@@ -11,6 +11,7 @@ vshender Infra repository
 - Added Github actions.
 - Fixed the Python test.
 
+<details><summary>Details</summary>
 
 Install a pre-commit hook:
 ```
@@ -23,6 +24,8 @@ Subscribe a Slack channel to a Github repository:
 /github subscribe Otus-DevOps-2022-02/vshender_infra commits:all
 ```
 
+</details>
+
 
 ## Homework #5: cloud-bastion
 
@@ -33,6 +36,7 @@ Subscribe a Slack channel to a Github repository:
 - Configured access to `someinternalhost` via VPN (based on [Pritunl](https://pritunl.com/)).
 - Configured a SSL certificate.
 
+<details><summary>Details</summary>
 
 Generate SSH authentication keys:
 ```
@@ -158,6 +162,8 @@ See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connectin
 
 To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.io" in "Settings -> Lets Encrypt Domain".
 
+</details>
+
 
 ## Homework #6: play-travis
 
@@ -166,6 +172,7 @@ To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.i
 - Added the application deployment scripts.
 - Added a metadata file that deploys the application on VM instance creation.
 
+<details><summary>Details</summary>
 
 Related Yandex Cloud documentation:
 
@@ -278,6 +285,8 @@ $ yc compute instance create \
 ...
 ```
 
+</details>
+
 
 ## Homework #7: packer-base
 
@@ -286,6 +295,7 @@ $ yc compute instance create \
 - Parameterized the packer template for the base image.
 - Added a packer template for the application image.
 
+<details><summary>Details</summary>
 
 Create a Yandex Cloud service account for Packer:
 ```
@@ -392,3 +402,5 @@ Create a VM instance using the application image:
 $ ../config-scripts/create-reddit-vm.sh
 ...
 ```
+
+</details>
