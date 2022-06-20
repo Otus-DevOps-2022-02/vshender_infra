@@ -1,0 +1,4 @@
+{
+  "service_account_key_file": "yc-svc-key.json.example",
+  "folder_id": "b1go0bbc4eormvjuv1mq"
+}

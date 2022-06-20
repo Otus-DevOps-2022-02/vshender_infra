@@ -283,6 +283,7 @@ $ yc compute instance create \
 
 - Created and configured a Yandex Cloud service account.
 - Added a packer template for the base image.
+- Parameterized the packer template for the base image.
 
 
 Create a Yandex Cloud service account for Packer:
@@ -365,4 +366,13 @@ $ yc compute image list
 +----------------------+------------------------+-------------+----------------------+--------+
 | fd87q6i0re98bj8v6fgc | reddit-base-1655732400 | reddit-base | f2ej52ijfor6n4fg5v0f | READY  |
 +----------------------+------------------------+-------------+----------------------+--------+
+```
+
+Build a base image for the application using the parameterized template:
+```
+$ packer validate -var-file=variables.json ./ubuntu16.json
+The configuration is valid.
+
+$ packer build -var-file=variables.json ./ubuntu16.json
+...
 ```

@@ -4,3 +4,5 @@
 .DS_Store
 
 yc-svc-key.json
+
+packer/variables.json
