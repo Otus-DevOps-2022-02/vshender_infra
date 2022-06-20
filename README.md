@@ -282,6 +282,7 @@ $ yc compute instance create \
 ## Homework #7: packer-base
 
 - Created and configured a Yandex Cloud service account.
+- Added a packer template for the base image.
 
 
 Create a Yandex Cloud service account for Packer:
@@ -314,4 +315,54 @@ id: ajeqipnvev31urbod1dv
 service_account_id: ajeg1tbs3ho02l5u4tg0
 created_at: "2021-07-13T09:56:23.667310740Z"
 key_algorithm: RSA_2048
+```
+
+Build a base image for the application:
+```
+$ cd packer
+
+$ packer validate ./ubuntu16.json
+The configuration is valid.
+
+$ packer build ./ubuntu16.json
+yandex: output will be in this color.
+
+==> yandex: Creating temporary RSA SSH key for instance...
+==> yandex: Using as source image: fd8icj5tthu0acqb2vau (name: "ubuntu-16-04-lts-v20220620", family: "ubuntu-1604-lts")
+==> yandex: Creating network...
+==> yandex: Creating subnet in zone "ru-central1-a"...
+==> yandex: Creating disk...
+==> yandex: Creating instance...
+==> yandex: Waiting for instance with id fhmfuumug63jem1pevmd to become active...
+    yandex: Detected instance IP: 51.250.90.119
+==> yandex: Using SSH communicator to connect: 51.250.90.119
+==> yandex: Waiting for SSH to become available...
+==> yandex: Connected to SSH!
+==> yandex: Provisioning with shell script: scripts/install_ruby.sh
+...
+==> yandex: Stopping instance...
+==> yandex: Deleting instance...
+    yandex: Instance has been deleted!
+==> yandex: Creating image: reddit-base-1655732400
+==> yandex: Waiting for image to complete...
+==> yandex: Success image create...
+==> yandex: Destroying subnet...
+    yandex: Subnet has been deleted!
+==> yandex: Destroying network...
+    yandex: Network has been deleted!
+==> yandex: Destroying boot disk...
+    yandex: Disk has been deleted!
+Build 'yandex' finished after 3 minutes 22 seconds.
+
+==> Wait completed after 3 minutes 22 seconds
+
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-base-1655732400 (id: fd87q6i0re98bj8v6fgc) with family name reddit-base
+
+$ yc compute image list
++----------------------+------------------------+-------------+----------------------+--------+
+|          ID          |          NAME          |   FAMILY    |     PRODUCT IDS      | STATUS |
++----------------------+------------------------+-------------+----------------------+--------+
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400 | reddit-base | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+------------------------+-------------+----------------------+--------+
 ```
