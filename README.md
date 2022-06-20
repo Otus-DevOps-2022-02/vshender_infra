@@ -284,6 +284,7 @@ $ yc compute instance create \
 - Created and configured a Yandex Cloud service account.
 - Added a packer template for the base image.
 - Parameterized the packer template for the base image.
+- Added a packer template for the application image.
 
 
 Create a Yandex Cloud service account for Packer:
@@ -374,5 +375,20 @@ $ packer validate -var-file=variables.json ./ubuntu16.json
 The configuration is valid.
 
 $ packer build -var-file=variables.json ./ubuntu16.json
+...
+```
+
+Build the application image:
+```
+$ packer validate -var-file=variables.json ./immutable.json
+The configuration is valid.
+
+$ packer build -var-file=variables.json ./immutable.json
+...
+```
+
+Create a VM instance using the application image:
+```
+$ ../config-scripts/create-reddit-vm.sh
 ...
 ```

@@ -1,0 +1,47 @@
+{
+  "variables": {
+    "service_account_key_file": "../yc-svc-key.json",
+    "folder_id": null,
+    "ssh_username": "ubuntu",
+    "platform_id": "standard-v1"
+  },
+  "builders": [
+    {
+      "type": "yandex",
+      "service_account_key_file": "{{ user `service_account_key_file` }}",
+      "folder_id": "{{ user `folder_id` }}",
+      "source_image_folder_id": "{{ user `folder_id` }}",
+      "source_image_family": "reddit-base",
+      "image_name": "reddit-full-{{timestamp}}",
+      "image_family": "reddit-full",
+      "use_ipv4_nat": "true",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "platform_id": "{{ user `platform_id` }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo useradd -m -s /bin/bash appuser"
+      ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/deploy.sh",
+      "execute_command": "sudo {{.Path}}"
+    },
+    {
+      "type": "file",
+      "source": "files/puma-reddit.service",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo mv /tmp/puma-reddit.service /etc/systemd/system/",
+        "sudo systemctl enable puma-reddit.service"
+      ]
+    }
+  ]
+}
