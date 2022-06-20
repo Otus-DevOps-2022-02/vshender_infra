@@ -277,3 +277,41 @@ $ yc compute instance create \
   --metadata-from-file user-data=config-scripts/metadata.yaml
 ...
 ```
+
+
+## Homework #7: packer-base
+
+- Created and configured a Yandex Cloud service account.
+
+
+Create a Yandex Cloud service account for Packer:
+```
+$ SVC_ACCOUNT=svc
+
+$ FOLDER_ID=$(yc config list | grep ^folder-id | awk '{ print $2 }')
+
+$ yc iam service-account create --name $SVC_ACCOUNT --folder-id $FOLDER_ID
+id: ajegsts7f3h7al6lnfti
+folder_id: b1go0bbc4eormvjuv1mq
+created_at: "2022-06-20T12:42:42.422216212Z"
+name: svc
+```
+
+Grant the created service account access to the folder:
+```
+$ ACCOUNT_ID=$(yc iam service-account get $SVC_ACCOUNT | grep ^id | awk '{ print $2 }')
+
+$ yc resource-manager folder add-access-binding --id $FOLDER_ID \
+    --role editor \
+    --service-account-id $ACCOUNT_ID
+done (1s)
+```
+
+Generate an IAM key and save it to a file:
+```
+$ yc iam key create --service-account-id $ACCOUNT_ID --output yc-svc-key.json
+id: ajeqipnvev31urbod1dv
+service_account_id: ajeg1tbs3ho02l5u4tg0
+created_at: "2021-07-13T09:56:23.667310740Z"
+key_algorithm: RSA_2048
+```
