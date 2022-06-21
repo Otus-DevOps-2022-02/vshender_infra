@@ -11,6 +11,7 @@ vshender Infra repository
 - Added Github actions.
 - Fixed the Python test.
 
+<details><summary>Details</summary>
 
 Install a pre-commit hook:
 ```
@@ -23,6 +24,8 @@ Subscribe a Slack channel to a Github repository:
 /github subscribe Otus-DevOps-2022-02/vshender_infra commits:all
 ```
 
+</details>
+
 
 ## Homework #5: cloud-bastion
 
@@ -33,6 +36,7 @@ Subscribe a Slack channel to a Github repository:
 - Configured access to `someinternalhost` via VPN (based on [Pritunl](https://pritunl.com/)).
 - Configured a SSL certificate.
 
+<details><summary>Details</summary>
 
 Generate SSH authentication keys:
 ```
@@ -158,6 +162,8 @@ See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connectin
 
 To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.io" in "Settings -> Lets Encrypt Domain".
 
+</details>
+
 
 ## Homework #6: play-travis
 
@@ -166,6 +172,7 @@ To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.i
 - Added the application deployment scripts.
 - Added a metadata file that deploys the application on VM instance creation.
 
+<details><summary>Details</summary>
 
 Related Yandex Cloud documentation:
 
@@ -236,7 +243,7 @@ testapp_port = 9292
 
 Install the required dependencies and deploy the application:
 ```
-$ scp *.sh yc-user@51.250.94.42:/home/yc-user
+$ scp config-scripts/*.sh yc-user@51.250.94.42:/home/yc-user
 ...
 
 $ ssh yc-user@51.250.94.42
@@ -274,6 +281,126 @@ $ yc compute instance create \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1604-lts,size=10GB \
   --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
   --metadata serial-port-enable=1 \
-  --metadata-from-file user-data=metadata.yaml
+  --metadata-from-file user-data=config-scripts/metadata.yaml
 ...
 ```
+
+</details>
+
+
+## Homework #7: packer-base
+
+- Created and configured a Yandex Cloud service account.
+- Added a packer template for the base image.
+- Parameterized the packer template for the base image.
+- Added a packer template for the application image.
+
+<details><summary>Details</summary>
+
+Create a Yandex Cloud service account for Packer:
+```
+$ SVC_ACCOUNT=svc
+
+$ FOLDER_ID=$(yc config list | grep ^folder-id | awk '{ print $2 }')
+
+$ yc iam service-account create --name $SVC_ACCOUNT --folder-id $FOLDER_ID
+id: ajegsts7f3h7al6lnfti
+folder_id: b1go0bbc4eormvjuv1mq
+created_at: "2022-06-20T12:42:42.422216212Z"
+name: svc
+```
+
+Grant the created service account access to the folder:
+```
+$ ACCOUNT_ID=$(yc iam service-account get $SVC_ACCOUNT | grep ^id | awk '{ print $2 }')
+
+$ yc resource-manager folder add-access-binding --id $FOLDER_ID \
+    --role editor \
+    --service-account-id $ACCOUNT_ID
+done (1s)
+```
+
+Generate an IAM key and save it to a file:
+```
+$ yc iam key create --service-account-id $ACCOUNT_ID --output yc-svc-key.json
+id: ajeqipnvev31urbod1dv
+service_account_id: ajeg1tbs3ho02l5u4tg0
+created_at: "2021-07-13T09:56:23.667310740Z"
+key_algorithm: RSA_2048
+```
+
+Build a base image for the application:
+```
+$ cd packer
+
+$ packer validate ./ubuntu16.json
+The configuration is valid.
+
+$ packer build ./ubuntu16.json
+yandex: output will be in this color.
+
+==> yandex: Creating temporary RSA SSH key for instance...
+==> yandex: Using as source image: fd8icj5tthu0acqb2vau (name: "ubuntu-16-04-lts-v20220620", family: "ubuntu-1604-lts")
+==> yandex: Creating network...
+==> yandex: Creating subnet in zone "ru-central1-a"...
+==> yandex: Creating disk...
+==> yandex: Creating instance...
+==> yandex: Waiting for instance with id fhmfuumug63jem1pevmd to become active...
+    yandex: Detected instance IP: 51.250.90.119
+==> yandex: Using SSH communicator to connect: 51.250.90.119
+==> yandex: Waiting for SSH to become available...
+==> yandex: Connected to SSH!
+==> yandex: Provisioning with shell script: scripts/install_ruby.sh
+...
+==> yandex: Stopping instance...
+==> yandex: Deleting instance...
+    yandex: Instance has been deleted!
+==> yandex: Creating image: reddit-base-1655732400
+==> yandex: Waiting for image to complete...
+==> yandex: Success image create...
+==> yandex: Destroying subnet...
+    yandex: Subnet has been deleted!
+==> yandex: Destroying network...
+    yandex: Network has been deleted!
+==> yandex: Destroying boot disk...
+    yandex: Disk has been deleted!
+Build 'yandex' finished after 3 minutes 22 seconds.
+
+==> Wait completed after 3 minutes 22 seconds
+
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-base-1655732400 (id: fd87q6i0re98bj8v6fgc) with family name reddit-base
+
+$ yc compute image list
++----------------------+------------------------+-------------+----------------------+--------+
+|          ID          |          NAME          |   FAMILY    |     PRODUCT IDS      | STATUS |
++----------------------+------------------------+-------------+----------------------+--------+
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400 | reddit-base | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+------------------------+-------------+----------------------+--------+
+```
+
+Build a base image for the application using the parameterized template:
+```
+$ packer validate -var-file=variables.json ./ubuntu16.json
+The configuration is valid.
+
+$ packer build -var-file=variables.json ./ubuntu16.json
+...
+```
+
+Build the application image:
+```
+$ packer validate -var-file=variables.json ./immutable.json
+The configuration is valid.
+
+$ packer build -var-file=variables.json ./immutable.json
+...
+```
+
+Create a VM instance using the application image:
+```
+$ ../config-scripts/create-reddit-vm.sh
+...
+```
+
+</details>
