@@ -404,3 +404,148 @@ $ ../config-scripts/create-reddit-vm.sh
 ```
 
 </details>
+
+
+## Homework #8: terraform-1
+
+- Created a VM instance using Terraform.
+
+<details><summary>Details</summary>
+
+[Yandex.Cloud provider documentation](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs)
+
+Get a config for Yandex provider:
+```
+$ yc config list
+token: ...
+cloud-id: ...
+folder-id: ...
+compute-default-zone: ru-central1-a
+```
+
+Initialize provider plugins:
+```
+$ cd terraform
+
+$ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding yandex-cloud/yandex versions matching "0.73.0"...
+- Installing yandex-cloud/yandex v0.73.0...
+- Installed yandex-cloud/yandex v0.73.0 (self-signed, key ID E40F590B50BB8E40)
+
+Partner and community providers are signed by their developers.
+If you'd like to know more about provider signing, you can read about it here:
+https://www.terraform.io/docs/cli/plugins/signing.html
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+```
+
+Get an ID of the base image for the application:
+```
+$ yc compute image list
++----------------------+------------------------+-------------+----------------------+--------+
+|          ID          |          NAME          |   FAMILY    |     PRODUCT IDS      | STATUS |
++----------------------+------------------------+-------------+----------------------+--------+
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400 | reddit-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd89dv82hadttcirp1hr | reddit-base-1655736298 | reddit-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8a5el5f41qgp5qjd8p | reddit-full-1655742289 | reddit-full | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+------------------------+-------------+----------------------+--------+
+```
+
+Get an ID of the "default-ru-central1-a" subnet:
+```
+$ yc vpc subnet list
++----------------------+-----------------------+----------------------+----------------+---------------+-----------------+
+|          ID          |         NAME          |      NETWORK ID      | ROUTE TABLE ID |     ZONE      |      RANGE      |
++----------------------+-----------------------+----------------------+----------------+---------------+-----------------+
+| b0cjh09a0p3tjffp9fbv | default-ru-central1-c | enpr8orbifbf56p068oa |                | ru-central1-c | [10.130.0.0/24] |
+| e2l0jp5kvb00tqjmh9r1 | default-ru-central1-b | enpr8orbifbf56p068oa |                | ru-central1-b | [10.129.0.0/24] |
+| e9bqom95bd1o3fkemarr | default-ru-central1-a | enpr8orbifbf56p068oa |                | ru-central1-a | [10.128.0.0/24] |
++----------------------+-----------------------+----------------------+----------------+---------------+-----------------+
+```
+
+See an execution plan showing what actions Terraform would take to apply the current configuration:
+```
+$ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app will be created
+  + resource "yandex_compute_instance" "app" {
+    ...
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+```
+
+Create a VM instance using Terraform:
+```
+$ terraform apply -auto-approve
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app will be created
+  + resource "yandex_compute_instance" "app" {
+    ...
+  }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+yandex_compute_instance.app: Creating...
+yandex_compute_instance.app: Still creating... [10s elapsed]
+yandex_compute_instance.app: Still creating... [20s elapsed]
+yandex_compute_instance.app: Still creating... [30s elapsed]
+yandex_compute_instance.app: Still creating... [40s elapsed]
+yandex_compute_instance.app: Creation complete after 44s [id=fhmoaa6p1qnl32fg26t6]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+$ ls
+main.tf                  terraform.tfstate        terraform.tfstate.backup
+```
+
+Get an external IP address of the created VM using the `terraform show` command:
+```
+$ terraform show | grep nat_ip_address
+          nat_ip_address = "51.250.81.64"
+```
+
+Connect to the created VM:
+```
+$ ssh -i ~/.ssh/appuser ubuntu@51.250.81.64
+Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-142-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+ubuntu@fhmoaa6p1qnl32fg26t6: exit
+logout
+Connection to 51.250.81.64 closed.
+```
+
+</details>
