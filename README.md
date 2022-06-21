@@ -129,7 +129,7 @@ Host someinternalhost
 
 Install and setup `pritunl` on the `bastion` VM:
 ```
-$ scp setupvpn.sh bastion:/home/appuser
+$ scp VPN/setupvpn.sh bastion:/home/appuser
 setupvpn.sh
 
 $ ssh bastion
@@ -157,3 +157,123 @@ Pritunl user:
 See [Connecting to a Pritunl vpn server](https://docs.pritunl.com/docs/connecting) for instructions.
 
 To setup Let's Encrypt for Pritunl admin panel just enter "51-250-77-242.sslip.io" in "Settings -> Lets Encrypt Domain".
+
+
+## Homework #6: play-travis
+
+- Installed and configured the `yc` CLI utility.
+- Created a VM for the application.
+- Added the application deployment scripts.
+- Added a metadata file that deploys the application on VM instance creation.
+
+
+Related Yandex Cloud documentation:
+
+- [Install CLI](https://cloud.yandex.ru/docs/cli/operations/install-cli)
+- [Profile Create](https://cloud.yandex.ru/docs/cli/operations/profile/profile-create)
+
+Create a Yandex Cloud profile:
+```
+$ yc init
+Welcome! This command will take you through the configuration process.
+Please go to https://oauth.yandex.ru/authorize?response_type=token&client_id=... in order to obtain OAuth token.
+
+Please enter OAuth token: ...
+You have one cloud available: 'otus-vadimshendergmailcom' (id = ...). It is going to be used by default.
+Please choose folder to use:
+ [1] default (id = ...)
+ [2] infra (id = ...)
+ [3] Create a new folder
+Please enter your numeric choice: 2
+Your current folder has been set to 'default' (id = ...).
+Do you want to configure a default Compute zone? [Y/n] y
+Which zone do you want to use as a profile default?
+ [1] ru-central1-a
+ [2] ru-central1-b
+ [3] ru-central1-c
+ [4] Don't set default zone
+Please enter your numeric choice: 1
+Your profile default Compute zone has been set to 'ru-central1-a'.
+```
+
+Check `yc` configuration:
+```
+$ yc config list
+token: ...
+cloud-id: ...
+folder-id: ...
+compute-default-zone: ru-central1-a
+
+$ yc config profile list
+default ACTIVE
+```
+
+Create a new VM instance:
+```
+$ yc compute instance create \
+  --name reddit-app \
+  --hostname reddit-app \
+  --memory=4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1604-lts,size=10GB \
+  --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+  --metadata serial-port-enable=1 \
+  --ssh-key ~/.ssh/appuser.pub
+...
+
+$ yc compute instance list
++----------------------+------------+---------------+---------+--------------+-------------+
+|          ID          |    NAME    |    ZONE ID    | STATUS  | EXTERNAL IP  | INTERNAL IP |
++----------------------+------------+---------------+---------+--------------+-------------+
+| fhmphnrc1ifveo9k059k | reddit-app | ru-central1-a | RUNNING | 51.250.94.42 | 10.128.0.17 |
++----------------------+------------+---------------+---------+--------------+-------------+
+```
+
+The created host's IP address and the port for the application:
+```
+testapp_IP = 51.250.94.42
+testapp_port = 9292
+```
+
+Install the required dependencies and deploy the application:
+```
+$ scp *.sh yc-user@51.250.94.42:/home/yc-user
+...
+
+$ ssh yc-user@51.250.94.42
+Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-142-generic x86_64)
+...
+
+yc-user@reddit-app:~$ ./install_ruby.sh
+...
+
+yc-user@reddit-app:~$ ruby -v
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+
+yc-user@reddit-app:~$ bundler -v
+Bundler version 1.11.2
+
+yc-user@reddit-app:~$ ./install_mongodb.sh
+...
+
+yc-user@reddit-app:~$ sudo systemctl status mongod
+● mongod.service - MongoDB Database Server
+   Loaded: loaded (/lib/systemd/system/mongod.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-06-19 18:24:46 UTC; 15s ago
+...
+
+yc-user@reddit-app:~$ ./deploy.sh
+...
+```
+
+Create a new VM instance providing the metadata that deploys the application:
+```
+$ yc compute instance create \
+  --name reddit-app \
+  --hostname reddit-app \
+  --memory=4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1604-lts,size=10GB \
+  --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+  --metadata serial-port-enable=1 \
+  --metadata-from-file user-data=metadata.yaml
+...
+```
