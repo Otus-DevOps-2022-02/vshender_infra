@@ -409,6 +409,7 @@ $ ../config-scripts/create-reddit-vm.sh
 ## Homework #8: terraform-1
 
 - Created a VM instance using Terraform.
+- Added an output variable for an external IP address.
 
 <details><summary>Details</summary>
 
@@ -546,6 +547,22 @@ Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-142-generic x86_64)
 ubuntu@fhmoaa6p1qnl32fg26t6: exit
 logout
 Connection to 51.250.81.64 closed.
+```
+
+Add the `external_ip_address_app` output variable and refresh the state:
+```
+$ terraform refresh
+yandex_compute_instance.app: Refreshing state... [id=fhmoaa6p1qnl32fg26t6]
+
+Outputs:
+
+external_ip_address_app = "51.250.81.64"
+
+$ terraform output
+external_ip_address_app = "51.250.81.64"
+
+$ terraform output external_ip_address_app
+"51.250.81.64"
 ```
 
 </details>
