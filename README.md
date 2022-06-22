@@ -410,6 +410,7 @@ $ ../config-scripts/create-reddit-vm.sh
 
 - Created a VM instance using Terraform.
 - Added an output variable for an external IP address.
+- Added provisioners for the application deployment.
 
 <details><summary>Details</summary>
 
@@ -564,5 +565,87 @@ external_ip_address_app = "51.250.81.64"
 $ terraform output external_ip_address_app
 "51.250.81.64"
 ```
+
+Add [provisioners](https://www.terraform.io/language/resources/provisioners/syntax) for the application deployment and recreate the VM:
+```
+$ terraform taint yandex_compute_instance.app
+Resource instance yandex_compute_instance.app has been marked as tainted.
+
+$ terraform plan
+yandex_compute_instance.app: Refreshing state... [id=fhmoaa6p1qnl32fg26t6]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app is tainted, so must be replaced
+-/+ resource "yandex_compute_instance" "app" {
+    ...
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  ~ external_ip_address_app = "51.250.81.64" -> (known after apply)
+
+────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform apply -auto-approve
+yandex_compute_instance.app: Refreshing state... [id=fhm3671dtvicqjp0lj67]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app is tainted, so must be replaced
+-/+ resource "yandex_compute_instance" "app" {
+      ...
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  ~ external_ip_address_app = "51.250.81.64" -> (known after apply)
+yandex_compute_instance.app: Destroying... [id=fhm3671dtvicqjp0lj67]
+yandex_compute_instance.app: Still destroying... [id=fhm3671dtvicqjp0lj67, 10s elapsed]
+yandex_compute_instance.app: Destruction complete after 14s
+yandex_compute_instance.app: Creating...
+...
+yandex_compute_instance.app: Still creating... [1m10s elapsed]
+yandex_compute_instance.app: Provisioning with 'remote-exec'...
+yandex_compute_instance.app (remote-exec): Connecting to remote host via SSH...
+yandex_compute_instance.app (remote-exec):   Host: 51.250.80.242
+yandex_compute_instance.app (remote-exec):   User: ubuntu
+yandex_compute_instance.app (remote-exec):   Password: false
+yandex_compute_instance.app (remote-exec):   Private key: true
+yandex_compute_instance.app (remote-exec):   Certificate: false
+yandex_compute_instance.app (remote-exec):   SSH Agent: false
+yandex_compute_instance.app (remote-exec):   Checking Host Key: false
+yandex_compute_instance.app (remote-exec):   Target Platform: unix
+yandex_compute_instance.app (remote-exec): Connected!
+yandex_compute_instance.app: Still creating... [1m20s elapsed]
+yandex_compute_instance.app (remote-exec): Reading package lists... 0%
+...
+yandex_compute_instance.app (remote-exec): Bundle complete! 11 Gemfile dependencies, 24 gems now installed.
+yandex_compute_instance.app (remote-exec): Use `bundle show [gemname]` to see where a bundled gem is installed
+yandex_compute_instance.app (remote-exec): Post-install message from capistrano3-puma:
+
+yandex_compute_instance.app (remote-exec):     All plugins need to be explicitly installed with install_plugin.
+yandex_compute_instance.app (remote-exec):     Please see README.md
+yandex_compute_instance.app (remote-exec):   Created symlink from /etc/systemd/system/multi-user.target.wants/puma.service to /etc/systemd/system/puma.service.
+yandex_compute_instance.app: Creation complete after 1m53s [id=fhmjhk18bf9n5et3lrd2]
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.80.242"
+```
+
+Open http://51.250.80.242:9292/ and check the application.
 
 </details>
