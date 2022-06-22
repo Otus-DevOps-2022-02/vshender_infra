@@ -414,6 +414,7 @@ $ ../config-scripts/create-reddit-vm.sh
 - Used input variables for the infrastructure configuration.
 - Created a network load balancer.
 - Created a second VM instance.
+- Created two VM instances using the `count` parameter.
 
 <details><summary>Details</summary>
 
@@ -753,6 +754,54 @@ Outputs:
 external_ip_address_app = "51.250.94.229"
 external_ip_address_app2 = "51.250.86.134"
 lb_ip_address = "51.250.93.157"
+```
+
+Use the `count` parameter to create VM instances for the application (see [dynamic Blocks](https://www.terraform.io/language/expressions/dynamic-blocks)):
+```
+$ terraform destroy -auto-approve
+...
+
+$ terraform apply -auto-approve
+yandex_compute_instance.app2: Refreshing state... [id=fhmvsvpegjoi2gtp2hn7]
+yandex_compute_instance.app[0]: Refreshing state... [id=fhm2vdlaapl6uv7ieidt]
+yandex_lb_target_group.app_lb_target_group: Refreshing state... [id=enp8gjo7a0lvnsl8cecg]
+yandex_lb_network_load_balancer.app_lb: Refreshing state... [id=enp5n1474kt4s6flf84e]
+
+Note: Objects have changed outside of Terraform
+...
+Plan: 1 to add, 2 to change, 1 to destroy.
+
+Changes to Outputs:
+  ~ external_ip_address_app  = "51.250.94.61" -> [
+      + "51.250.94.61",
+      + (known after apply),
+    ]
+  - external_ip_address_app2 = "51.250.69.6" -> null
+yandex_compute_instance.app2: Destroying... [id=fhmvsvpegjoi2gtp2hn7]
+yandex_compute_instance.app[1]: Creating...
+yandex_compute_instance.app[0]: Modifying... [id=fhm2vdlaapl6uv7ieidt]
+yandex_compute_instance.app[0]: Modifications complete after 6s [id=fhm2vdlaapl6uv7ieidt]
+yandex_compute_instance.app2: Still destroying... [id=fhmvsvpegjoi2gtp2hn7, 10s elapsed]
+yandex_compute_instance.app[1]: Still creating... [10s elapsed]
+yandex_compute_instance.app2: Destruction complete after 14s
+yandex_compute_instance.app[1]: Still creating... [20s elapsed]
+...
+yandex_compute_instance.app[1] (remote-exec):     All plugins need to be explicitly installed with install_plugin.
+yandex_compute_instance.app[1] (remote-exec):     Please see README.md
+yandex_compute_instance.app[1] (remote-exec):   Created symlink from /etc/systemd/system/multi-user.target.wants/puma.service to /etc/systemd/system/puma.service.
+yandex_compute_instance.app[1]: Creation complete after 1m38s [id=fhmrureeugrl0dmeqpbo]
+yandex_lb_target_group.app_lb_target_group: Modifying... [id=enp8gjo7a0lvnsl8cecg]
+yandex_lb_target_group.app_lb_target_group: Modifications complete after 2s [id=enp8gjo7a0lvnsl8cecg]
+
+Apply complete! Resources: 1 added, 2 changed, 1 destroyed.
+
+Outputs:
+
+external_ip_address_app = [
+  "51.250.94.61",
+  "51.250.94.171",
+]
+lb_ip_address = "51.250.76.174"
 ```
 
 </details>

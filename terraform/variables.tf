@@ -37,3 +37,8 @@ variable "private_key_path" {
 variable "public_key_path" {
   description = "Path to the public key used for ssh access"
 }
+
+variable instance_count {
+  description = "Instance count"
+  default     = 1
+}
