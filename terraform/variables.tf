@@ -21,10 +21,6 @@ variable "image_id" {
   description = "Disk image"
 }
 
-variable "subnet_id" {
-  description = "Subnet"
-}
-
 variable "private_key_path" {
   description = "Path to the private key used for ssh access"
 }

@@ -805,3 +805,82 @@ lb_ip_address = "51.250.76.174"
 ```
 
 </details>
+
+
+## Homework #9: terraform-2
+
+- Created the separate network for the application VM instance.
+
+<details><summary>Details</summary>
+
+Create a separate network for the app VM instance:
+```
+$ cd terraform
+
+$ terraform destroy -auto-approve
+...
+yandex_lb_network_load_balancer.app_lb: Destroying... [id=enp5n1474kt4s6flf84e]
+yandex_lb_network_load_balancer.app_lb: Destruction complete after 4s
+yandex_lb_target_group.app_lb_target_group: Destroying... [id=enp8gjo7a0lvnsl8cecg]
+yandex_lb_target_group.app_lb_target_group: Destruction complete after 2s
+yandex_compute_instance.app[0]: Destroying... [id=fhm2vdlaapl6uv7ieidt]
+yandex_compute_instance.app[1]: Destroying... [id=fhmrureeugrl0dmeqpbo]
+yandex_compute_instance.app[1]: Still destroying... [id=fhmrureeugrl0dmeqpbo, 10s elapsed]
+yandex_compute_instance.app[0]: Still destroying... [id=fhm2vdlaapl6uv7ieidt, 10s elapsed]
+yandex_compute_instance.app[1]: Destruction complete after 12s
+yandex_compute_instance.app[0]: Destruction complete after 12s
+
+Destroy complete! Resources: 4 destroyed.
+
+$ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+  # yandex_compute_instance.app[0] will be created
+  + resource "yandex_compute_instance" "app" {
+      ...
+    }
+  # yandex_vpc_network.app_network will be created
+  + resource "yandex_vpc_network" "app_network" {
+      ...
+    }
+  # yandex_vpc_subnet.app_subnet will be created
+  + resource "yandex_vpc_subnet" "app_subnet" {
+      ...
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + external_ip_address_app = [
+      + (known after apply),
+    ]
+
+────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform apply -auto-approve
+...
+yandex_vpc_network.app_network: Creating...
+yandex_vpc_network.app_network: Creation complete after 3s [id=enph5srrts10kq9h6q46]
+yandex_vpc_subnet.app_subnet: Creating...
+yandex_vpc_subnet.app_subnet: Creation complete after 1s [id=e9bnii4nqtv6vmejigus]
+yandex_compute_instance.app[0]: Creating...
+...
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = [
+  "51.250.12.47",
+]
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 3 destroyed.
+```
+
+</details>
