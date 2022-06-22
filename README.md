@@ -412,6 +412,7 @@ $ ../config-scripts/create-reddit-vm.sh
 - Added an output variable for an external IP address.
 - Added provisioners for the application deployment.
 - Used input variables for the infrastructure configuration.
+- Created a network load balancer.
 
 <details><summary>Details</summary>
 
@@ -682,5 +683,24 @@ Outputs:
 
 external_ip_address_app = "51.250.94.229"
 ```
+
+Create a network load balancer (see [yandex_lb_network_load_balancer](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/lb_network_load_balancer) and [yandex_lb_target_group](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/lb_target_group)):
+```
+$ terraform apply -auto-approve
+...
+yandex_lb_target_group.app_lb_target_group: Creating...
+yandex_lb_target_group.app_lb_target_group: Creation complete after 3s [id=enp6b9l8trdd86k50f7s]
+yandex_lb_network_load_balancer.app_lb: Creating...
+yandex_lb_network_load_balancer.app_lb: Creation complete after 3s [id=enpprkh4ar833qsmts6d]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.229"
+lb_ip_address = "51.250.93.157"
+```
+
+Open http://51.250.93.157/ and check the application.
 
 </details>

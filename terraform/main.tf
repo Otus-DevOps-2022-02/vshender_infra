@@ -41,7 +41,7 @@ resource "yandex_compute_instance" "app" {
 
   connection {
     type  = "ssh"
-    host  = yandex_compute_instance.app.network_interface.0.nat_ip_address
+    host  = self.network_interface.0.nat_ip_address
     user  = "ubuntu"
     agent = false
     # путь к приватному ключу

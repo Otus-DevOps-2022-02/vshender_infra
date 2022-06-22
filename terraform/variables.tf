@@ -11,6 +11,11 @@ variable "folder_id" {
   description = "Folder"
 }
 
+variable "region_id" {
+  description = "Region"
+  default     = "ru-central1"
+}
+
 variable "zone" {
   description = "Zone"
   # Значение по умолчанию
