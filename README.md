@@ -413,6 +413,7 @@ $ ../config-scripts/create-reddit-vm.sh
 - Added provisioners for the application deployment.
 - Used input variables for the infrastructure configuration.
 - Created a network load balancer.
+- Created a second VM instance.
 
 <details><summary>Details</summary>
 
@@ -702,5 +703,56 @@ lb_ip_address = "51.250.93.157"
 ```
 
 Open http://51.250.93.157/ and check the application.
+
+Create a second VM instance:
+```
+$ terraform plan
+yandex_compute_instance.app: Refreshing state... [id=fhmpgq0sqconiuha2fap]
+yandex_lb_target_group.app_lb_target_group: Refreshing state... [id=enp6b9l8trdd86k50f7s]
+yandex_lb_network_load_balancer.app_lb: Refreshing state... [id=enpprkh4ar833qsmts6d]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app2 will be created
+  + resource "yandex_compute_instance" "app2" {
+    ...
+    }
+
+  # yandex_lb_target_group.app_lb_target_group will be updated in-place
+  ~ resource "yandex_lb_target_group" "app_lb_target_group" {
+        id         = "enp6b9l8trdd86k50f7s"
+        name       = "app-lb-target-group"
+        # (4 unchanged attributes hidden)
+
+      + target {
+          + address   = (known after apply)
+          + subnet_id = "e9bqom95bd1o3fkemarr"
+        }
+        # (1 unchanged block hidden)
+    }
+
+Plan: 1 to add, 1 to change, 0 to destroy.
+
+Changes to Outputs:
+  + external_ip_address_app2 = (known after apply)
+
+────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 1 added, 1 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.229"
+external_ip_address_app2 = "51.250.86.134"
+lb_ip_address = "51.250.93.157"
+```
 
 </details>
