@@ -8,10 +8,10 @@ terraform {
 }
 
 provider "yandex" {
-  service_account_key_file = "../yc-svc-key.json"
-  cloud_id                 = "b1gfri8c7lvn2hi12p7g"
-  folder_id                = "b1go0bbc4eormvjuv1mq"
-  zone                     = "ru-central1-a"
+  service_account_key_file = var.service_account_key_file
+  cloud_id                 = var.cloud_id
+  folder_id                = var.folder_id
+  zone                     = var.zone
 }
 
 resource "yandex_compute_instance" "app" {
@@ -25,18 +25,18 @@ resource "yandex_compute_instance" "app" {
   boot_disk {
     initialize_params {
       # Указать id образа созданного в предыдущем домашем задании
-      image_id = "fd89dv82hadttcirp1hr"
+      image_id = var.image_id
     }
   }
 
   network_interface {
     # Указан id подсети default-ru-central1-a
-    subnet_id = "e9bqom95bd1o3fkemarr"
+    subnet_id = var.subnet_id
     nat       = true
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${file("~/.ssh/appuser.pub")}"
+    ssh-keys = "ubuntu:${file(var.public_key_path)}"
   }
 
   connection {
@@ -45,7 +45,7 @@ resource "yandex_compute_instance" "app" {
     user  = "ubuntu"
     agent = false
     # путь к приватному ключу
-    private_key = file("~/.ssh/appuser")
+    private_key = file(var.private_key_path)
   }
 
   provisioner "file" {

@@ -411,6 +411,7 @@ $ ../config-scripts/create-reddit-vm.sh
 - Created a VM instance using Terraform.
 - Added an output variable for an external IP address.
 - Added provisioners for the application deployment.
+- Used input variables for the infrastructure configuration.
 
 <details><summary>Details</summary>
 
@@ -647,5 +648,39 @@ external_ip_address_app = "51.250.80.242"
 ```
 
 Open http://51.250.80.242:9292/ and check the application.
+
+Use input variables for the infrastructure configuration and recreate the VM:
+```
+$ terraform destroy -auto-approve
+yandex_compute_instance.app: Refreshing state... [id=fhmjhk18bf9n5et3lrd2]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.app will be destroyed
+  - resource "yandex_compute_instance" "app" {
+    ...
+    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  - external_ip_address_app = "51.250.80.242" -> null
+yandex_compute_instance.app: Destroying... [id=fhmjhk18bf9n5et3lrd2]
+yandex_compute_instance.app: Still destroying... [id=fhmjhk18bf9n5et3lrd2, 10s elapsed]
+yandex_compute_instance.app: Destruction complete after 14s
+
+Destroy complete! Resources: 1 destroyed.
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.229"
+```
 
 </details>
