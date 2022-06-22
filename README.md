@@ -810,6 +810,7 @@ lb_ip_address = "51.250.76.174"
 ## Homework #9: terraform-2
 
 - Created the separate network for the application VM instance.
+- Created base images for the DB and the application.
 
 <details><summary>Details</summary>
 
@@ -881,6 +882,32 @@ external_ip_address_app = [
 $ terraform destroy -auto-approve
 ...
 Destroy complete! Resources: 3 destroyed.
+```
+
+Create base images for the DB and the application:
+```
+$ cd ../packer
+
+$ packer build -var-file=variables.json ./db.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-db-base-1655933993 (id: fd8bvuaat05ogds90rte) with family name reddit-db-base
+
+$ packer build -var-file=variables.json ./app.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-app-base-1655934193 (id: fd84km3m351crgj9upkq) with family name reddit-app-base
+
+$ yc compute image list
++----------------------+----------------------------+-----------------+----------------------+--------+
+|          ID          |            NAME            |     FAMILY      |     PRODUCT IDS      | STATUS |
++----------------------+----------------------------+-----------------+----------------------+--------+
+| fd84km3m351crgj9upkq | reddit-app-base-1655934193 | reddit-app-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd89dv82hadttcirp1hr | reddit-base-1655736298     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8a5el5f41qgp5qjd8p | reddit-full-1655742289     | reddit-full     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8bvuaat05ogds90rte | reddit-db-base-1655933993  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+----------------------------+-----------------+----------------------+--------+
 ```
 
 </details>
