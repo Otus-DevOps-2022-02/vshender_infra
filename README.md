@@ -813,6 +813,7 @@ lb_ip_address = "51.250.76.174"
 - Created base images for the DB and the application.
 - Created separate VM instances for the DB and the application.
 - Refactored the infrastructure definition using modules.
+- Created the `prod` and `stage` infrastructures.
 
 <details><summary>Details</summary>
 
@@ -1081,6 +1082,82 @@ Destroy the infrastructure:
 $ terraform destroy -auto-approve
 ...
 Destroy complete! Resources: 6 destroyed.
+```
+
+Check the `prod` infrastructure:
+```
+$ cd prod
+
+$ terraform init
+Initializing modules...
+- app in ../modules/app
+- db in ../modules/db
+- vpc in ../modules/vpc
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding yandex-cloud/yandex versions matching "~> 0.73.0"...
+- Finding latest version of hashicorp/null...
+- Installing hashicorp/null v3.1.1...
+- Installed hashicorp/null v3.1.1 (signed by HashiCorp)
+- Installing yandex-cloud/yandex v0.73.0...
+- Installed yandex-cloud/yandex v0.73.0 (self-signed, key ID E40F590B50BB8E40)
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.145"
+external_ip_address_db = "51.250.69.6"
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 6 destroyed.
+```
+
+Check the `stage` infrastructure:
+```
+$ cd ../stage
+
+$ terraform init
+Initializing modules...
+- app in ../modules/app
+- db in ../modules/db
+- vpc in ../modules/vpc
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding yandex-cloud/yandex versions matching "~> 0.73.0"...
+- Finding latest version of hashicorp/null...
+- Installing yandex-cloud/yandex v0.73.0...
+- Installed yandex-cloud/yandex v0.73.0 (self-signed, key ID E40F590B50BB8E40)
+- Installing hashicorp/null v3.1.1...
+- Installed hashicorp/null v3.1.1 (signed by HashiCorp)
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.68.153"
+external_ip_address_db = "51.250.93.213"
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 6 destroyed.
+
+$ cd ..
 ```
 
 </details>

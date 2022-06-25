@@ -15,11 +15,11 @@ provider "yandex" {
 }
 
 module "vpc" {
-  source = "./modules/vpc"
+  source = "../modules/vpc"
 }
 
 module "app" {
-  source           = "./modules/app"
+  source           = "../modules/app"
   subnet_id        = module.vpc.subnet_id
   app_disk_image   = var.app_disk_image
   db_ip            = module.db.internal_ip_address_db
@@ -28,7 +28,7 @@ module "app" {
 }
 
 module "db" {
-  source           = "./modules/db"
+  source           = "../modules/db"
   subnet_id        = module.vpc.subnet_id
   db_disk_image    = var.db_disk_image
   private_key_path = var.private_key_path
