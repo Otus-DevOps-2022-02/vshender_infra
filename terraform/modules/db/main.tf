@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    yandex = {
+      source  = "yandex-cloud/yandex"
+      version = "~> 0.73.0"
+    }
+  }
+}
+
 resource "yandex_compute_instance" "db" {
   name = "reddit-db"
 
@@ -17,7 +26,7 @@ resource "yandex_compute_instance" "db" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.app_subnet.id
+    subnet_id = var.subnet_id
     nat       = true
   }
 
@@ -40,7 +49,7 @@ resource "null_resource" "db_provisioning" {
   }
 
   provisioner "file" {
-    content = templatefile("files/mongod.conf.tmpl", {
+    content = templatefile("${path.module}/files/mongod.conf.tmpl", {
       db_ip = yandex_compute_instance.db.network_interface.0.ip_address
     })
     destination = "/tmp/mongod.conf"
@@ -48,7 +57,7 @@ resource "null_resource" "db_provisioning" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo mv /tmp/mongod.conf /etc/mongod.conf",
+      "sudo mv -f /tmp/mongod.conf /etc/mongod.conf",
       "sudo systemctl restart mongod"
     ]
   }

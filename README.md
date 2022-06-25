@@ -812,6 +812,7 @@ lb_ip_address = "51.250.76.174"
 - Created the separate network for the application VM instance.
 - Created base images for the DB and the application.
 - Created separate VM instances for the DB and the application.
+- Refactored the infrastructure definition using modules.
 
 <details><summary>Details</summary>
 
@@ -937,6 +938,143 @@ external_ip_address_db = "51.250.65.74"
 ```
 
 Open http://51.250.87.139:9292/ and check the application.
+
+Destroy the infrastructure:
+```
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 6 destroyed.
+```
+
+Install the `app`, `db`, and `vpc` modules.
+```
+$ terraform get
+- app in modules/app
+- db in modules/db
+- vpc in modules/vpc
+
+$ tree .terraform
+.terraform
+├── modules
+│   └── modules.json
+└── providers
+    └── registry.terraform.io
+        ├── hashicorp
+        │   └── null
+        │       └── 3.1.1
+        │           └── darwin_amd64
+        │               └── terraform-provider-null_v3.1.1_x5
+        └── yandex-cloud
+            └── yandex
+                └── 0.73.0
+                    └── darwin_amd64
+                        ├── CHANGELOG.md
+                        ├── LICENSE
+                        ├── README.md
+                        └── terraform-provider-yandex_v0.73.0
+
+11 directories, 6 files
+
+$ cat .terraform/modules/modules.json | jq
+{
+  "Modules": [
+    {
+      "Key": "db",
+      "Source": "./modules/db",
+      "Dir": "modules/db"
+    },
+    {
+      "Key": "vpc",
+      "Source": "./modules/vpc",
+      "Dir": "modules/vpc"
+    },
+    {
+      "Key": "",
+      "Source": "",
+      "Dir": "."
+    },
+    {
+      "Key": "app",
+      "Source": "./modules/app",
+      "Dir": "modules/app"
+    }
+  ]
+}
+
+$ terraform init -upgrade
+Upgrading modules...
+- app in modules/app
+- db in modules/db
+- vpc in modules/vpc
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding yandex-cloud/yandex versions matching "~> 0.73.0"...
+- Finding latest version of hashicorp/null...
+- Using previously-installed yandex-cloud/yandex v0.73.0
+- Using previously-installed hashicorp/null v3.1.1
+...
+```
+
+```
+$ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.app.null_resource.app_provisioning will be created
+  + resource "null_resource" "app_provisioning" {
+    ...
+  }
+
+  # module.app.yandex_compute_instance.app will be created
+  + resource "yandex_compute_instance" "app" {
+    ...
+  }
+
+  # module.db.null_resource.db_provisioning will be created
+  + resource "null_resource" "db_provisioning" {
+    ...
+  }
+
+  # module.db.yandex_compute_instance.db will be created
+  + resource "yandex_compute_instance" "db" {
+    ...
+  }
+
+  # module.vpc.yandex_vpc_network.app_network will be created
+  + resource "yandex_vpc_network" "app_network" {
+    ...
+  }
+
+  # module.vpc.yandex_vpc_subnet.app_subnet will be created
+  + resource "yandex_vpc_subnet" "app_subnet" {
+    ...
+  }
+
+Plan: 6 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + external_ip_address_app = (known after apply)
+  + external_ip_address_db  = (known after apply)
+
+────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.91.238"
+external_ip_address_db = "51.250.71.69"
+```
 
 Destroy the infrastructure:
 ```

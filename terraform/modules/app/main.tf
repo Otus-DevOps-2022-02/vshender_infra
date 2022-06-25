@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    yandex = {
+      source  = "yandex-cloud/yandex"
+      version = "~> 0.73.0"
+    }
+  }
+}
+
 resource "yandex_compute_instance" "app" {
   name = "reddit-app"
 
@@ -17,7 +26,7 @@ resource "yandex_compute_instance" "app" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.app_subnet.id
+    subnet_id = var.subnet_id
     nat       = true
   }
 
@@ -28,7 +37,7 @@ resource "yandex_compute_instance" "app" {
 
 resource "null_resource" "app_provisioning" {
   triggers = {
-    db_ip = yandex_compute_instance.db.network_interface.0.ip_address
+    db_ip = var.db_ip
   }
 
   connection {
@@ -40,13 +49,11 @@ resource "null_resource" "app_provisioning" {
   }
 
   provisioner "file" {
-    content = templatefile("files/puma.service.tmpl", {
-      db_ip = yandex_compute_instance.db.network_interface.0.ip_address
-    })
+    content     = templatefile("${path.module}/files/puma.service.tmpl", { db_ip = var.db_ip })
     destination = "/tmp/puma.service"
   }
 
   provisioner "remote-exec" {
-    script = "files/deploy.sh"
+    script = "${path.module}/files/deploy.sh"
   }
 }
