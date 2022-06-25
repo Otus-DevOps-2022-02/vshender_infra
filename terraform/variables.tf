@@ -17,8 +17,14 @@ variable "zone" {
   default = "ru-central1-a"
 }
 
-variable "image_id" {
-  description = "Disk image"
+variable "app_disk_image" {
+  description = "Disk image for the reddit app"
+  default     = "reddit-app-base"
+}
+
+variable "db_disk_image" {
+  description = "Disk image for the reddit DB"
+  default     = "reddis-db-base"
 }
 
 variable "private_key_path" {
@@ -27,9 +33,4 @@ variable "private_key_path" {
 
 variable "public_key_path" {
   description = "Path to the public key used for ssh access"
-}
-
-variable instance_count {
-  description = "Instance count"
-  default     = 1
 }

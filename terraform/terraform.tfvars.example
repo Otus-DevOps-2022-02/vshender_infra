@@ -1,7 +1,7 @@
 service_account_key_file = "../yc-svc-key.json"
 cloud_id                 = "abcdef01234567890abc"
 folder_id                = "b1go0bbc4eormvjuv1mq"
-image_id                 = "fd89dv82hadttcirp1hr"
+app_disk_image           = "fd84km3m351crgj9upkq"
+db_disk_image            = "fd8bvuaat05ogds90rte"
 private_key_path         = "~/.ssh/appuser"
 public_key_path          = "~/.ssh/appuser.pub"
-instance_count           = 1

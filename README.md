@@ -811,6 +811,7 @@ lb_ip_address = "51.250.76.174"
 
 - Created the separate network for the application VM instance.
 - Created base images for the DB and the application.
+- Created separate VM instances for the DB and the application.
 
 <details><summary>Details</summary>
 
@@ -908,6 +909,40 @@ $ yc compute image list
 | fd8a5el5f41qgp5qjd8p | reddit-full-1655742289     | reddit-full     | f2ej52ijfor6n4fg5v0f | READY  |
 | fd8bvuaat05ogds90rte | reddit-db-base-1655933993  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
 +----------------------+----------------------------+-----------------+----------------------+--------+
+```
+
+Create separate VM instances for DB and the application:
+```
+$ terraform init -upgrade
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding yandex-cloud/yandex versions matching "0.73.0"...
+- Finding latest version of hashicorp/null...
+- Using previously-installed yandex-cloud/yandex v0.73.0
+- Installing hashicorp/null v3.1.1...
+- Installed hashicorp/null v3.1.1 (signed by HashiCorp)
+
+...
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.87.139"
+external_ip_address_db = "51.250.65.74"
+```
+
+Open http://51.250.87.139:9292/ and check the application.
+
+Destroy the infrastructure:
+```
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 6 destroyed.
 ```
 
 </details>
