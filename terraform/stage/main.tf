@@ -39,9 +39,10 @@ module "db" {
 
 resource "local_file" "generate_ansible_inventory" {
   filename = var.ansible_inventory
-  content  = templatefile("files/inventory.tpl", {
-    app_ip_address = module.app.external_ip_address_app,
-    db_ip_address  = module.db.external_ip_address_db
+  content = templatefile("files/inventory.tpl", {
+    app_ip_address         = module.app.external_ip_address_app,
+    db_ip_address          = module.db.external_ip_address_db,
+    db_internal_ip_address = module.db.internal_ip_address_db
   })
 
   provisioner "local-exec" {

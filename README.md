@@ -1565,6 +1565,7 @@ Useful links:
 
 - Disabled provisioning in Terraform infrastructure definition.
 - Implemented MongoDB configuration.
+- Implemented Puma HTTP server configuration.
 
 <details><summary>Details</summary>
 
@@ -1628,6 +1629,80 @@ changed: [dbserver]
 
 PLAY RECAP *******************************************************************************************************
 dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Configure Puma HTTP server.
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+Terraform will perform the following actions:
+
+  # local_file.generate_ansible_inventory must be replaced
+...
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  + internal_ip_address_db = "192.168.10.18"
+...
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.95.160"
+external_ip_address_db = "51.250.81.186"
+internal_ip_address_db = "192.168.10.18"
+
+$ cd ../../ansible/
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.95.160 db_host=192.168.10.18
+
+[db]
+dbserver ansible_host=51.250.81.186
+
+$ ./inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.95.160"
+    ],
+    "vars": {
+      db_host: "192.168.10.18"
+    }
+  },
+  "db": {
+    "hosts": [
+      "51.250.81.186"
+    ]
+  }
+}
+
+$ ansible-playbook reddit_app.yml --limit app --tags app-tag
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [appserver]
+
+TASK [Add config for DB connection] ******************************************************************************
+changed: [appserver]
+
+TASK [Enable Puma] ***********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 </details>
