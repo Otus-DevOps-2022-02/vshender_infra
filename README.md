@@ -1271,3 +1271,20 @@ $ cd ..
 ```
 
 </details>
+
+
+## Homework #10: ansible-1
+
+- Installed Ansible.
+
+<details><summary>Details</summary>
+
+Install Ansible:
+```
+$ cd ansible
+$ pip install -r requirements.txt
+...
+Successfully installed ansible-6.0.0
+```
+
+</details>
