@@ -1282,6 +1282,7 @@ $ cd ..
 - Added host groups.
 - Added a YAML inventory file.
 - Checked that the servers' components are installed.
+- Cloned the application repository to the app server.
 
 <details><summary>Details</summary>
 
@@ -1435,6 +1436,20 @@ dbserver | SUCCESS => {
         "ActiveState": "active",
         ...
     }
+}
+```
+
+Clone the application repository:
+```
+$ ansible app -m git -a 'repo=https://github.com/express42/reddit.git dest=/home/ubuntu/reddit'
+appserver | SUCCESS => {
+    "after": "5c217c565c1122c5343dc0514c116ae816c17ca2",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "before": "5c217c565c1122c5343dc0514c116ae816c17ca2",
+    "changed": false,
+    "remote_url_changed": false
 }
 ```
 
