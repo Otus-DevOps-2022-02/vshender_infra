@@ -1281,6 +1281,7 @@ $ cd ..
 - Configured Ansible using the `ansible.cfg` file.
 - Added host groups.
 - Added a YAML inventory file.
+- Checked that the servers' components are installed.
 
 <details><summary>Details</summary>
 
@@ -1374,6 +1375,66 @@ dbserver | SUCCESS => {
     },
     "changed": false,
     "ping": "pong"
+}
+```
+
+Check that the servers' components are installed:
+```
+$ ansible app -m command -a 'ruby -v'
+appserver | CHANGED | rc=0 >>
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+
+$ ansible app -m command -a 'bundler -v'
+appserver | CHANGED | rc=0 >>
+Bundler version 1.11.2
+
+$ ansible app -m command -a 'ruby -v; bundler -v'
+appserver | FAILED | rc=1 >>
+ruby: invalid option -;  (-h will show valid options) (RuntimeError)non-zero return code
+
+$ ansible app -m shell -a 'ruby -v; bundler -v'
+appserver | CHANGED | rc=0 >>
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+Bundler version 1.11.2
+
+$ ansible db -m command -a 'systemctl status mongod'
+dbserver | CHANGED | rc=0 >>
+● mongod.service - MongoDB Database Server
+   Loaded: loaded (/lib/systemd/system/mongod.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-06-26 14:15:50 UTC; 30min ago
+     Docs: https://docs.mongodb.org/manual
+ Main PID: 795 (mongod)
+   CGroup: /system.slice/mongod.service
+           └─795 /usr/bin/mongod --config /etc/mongod.conf
+
+Jun 26 14:15:50 fhm4434fmipdb6jqmbtg systemd[1]: Started MongoDB Database Server.
+
+$ ansible db -m systemd -a name=mongod
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "name": "mongod",
+    "status": {
+        ...
+        "ActiveState": "active",
+        ...
+    }
+}
+
+$ ansible db -m service -a name=mongod
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "name": "mongod",
+    "status": {
+        ...
+        "ActiveState": "active",
+        ...
+    }
 }
 ```
 
