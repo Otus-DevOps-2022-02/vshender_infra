@@ -1283,6 +1283,7 @@ $ cd ..
 - Added a YAML inventory file.
 - Checked that the servers' components are installed.
 - Cloned the application repository to the app server.
+- Added the application cloning playbook.
 
 <details><summary>Details</summary>
 
@@ -1451,6 +1452,22 @@ appserver | SUCCESS => {
     "changed": false,
     "remote_url_changed": false
 }
+```
+
+Check the application cloning playbook:
+```
+$ ansible-playbook clone.yml
+
+PLAY [Clone] *****************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Clone repo] ************************************************************************************************
+ok: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 </details>
