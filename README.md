@@ -1276,6 +1276,7 @@ $ cd ..
 ## Homework #10: ansible-1
 
 - Installed Ansible.
+- Created the `stage` infrastructure.
 
 <details><summary>Details</summary>
 
@@ -1285,6 +1286,28 @@ $ cd ansible
 $ pip install -r requirements.txt
 ...
 Successfully installed ansible-6.0.0
+```
+
+Create a staging environment:
+```
+$ cd ../terraform
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+$ cd stage
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.89.224"
+external_ip_address_db = "51.250.95.242"
+
+$ cd ../../ansible
 ```
 
 </details>
