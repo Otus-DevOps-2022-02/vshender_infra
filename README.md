@@ -1277,6 +1277,7 @@ $ cd ..
 
 - Installed Ansible.
 - Created the `stage` infrastructure.
+- Added an inventory file.
 
 <details><summary>Details</summary>
 
@@ -1308,6 +1309,27 @@ external_ip_address_app = "51.250.89.224"
 external_ip_address_db = "51.250.95.242"
 
 $ cd ../../ansible
+```
+
+Check the inventory file:
+```
+$ ansible appserver -i ./inventory -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+$ ansible dbserver -i ./inventory -m ping
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
 
 </details>
