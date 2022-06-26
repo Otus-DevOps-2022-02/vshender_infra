@@ -34,3 +34,21 @@ module "db" {
   private_key_path = var.private_key_path
   public_key_path  = var.public_key_path
 }
+
+resource "local_file" "generate_ansible_inventory" {
+  filename = var.ansible_inventory
+  content  = templatefile("files/inventory.tpl", {
+    app_ip_address = module.app.external_ip_address_app,
+    db_ip_address  = module.db.external_ip_address_db
+  })
+
+  provisioner "local-exec" {
+    command = "chmod a-x ${self.filename}"
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    command    = "mv ${self.filename} ${self.filename}.backup"
+    on_failure = continue
+  }
+}

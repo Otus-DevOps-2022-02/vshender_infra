@@ -1284,6 +1284,7 @@ $ cd ..
 - Checked that the servers' components are installed.
 - Cloned the application repository to the app server.
 - Added the application cloning playbook.
+- Implemented an inventory file generation.
 
 <details><summary>Details</summary>
 
@@ -1468,6 +1469,56 @@ ok: [appserver]
 
 PLAY RECAP *******************************************************************************************************
 appserver                  : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Generate an inventory file:
+```
+$ rm inventory
+
+$ cd ../terraform/stage
+
+$ terraform init -upgrade
+Upgrading modules...
+- app in ../modules/app
+- db in ../modules/db
+- vpc in ../modules/vpc
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/null...
+- Finding yandex-cloud/yandex versions matching "~> 0.73.0"...
+- Finding latest version of hashicorp/local...
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+- Using previously-installed hashicorp/null v3.1.1
+- Using previously-installed yandex-cloud/yandex v0.73.0
+...
+
+$ terraform apply -auto-approve
+...
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+local_file.generate_ansible_inventory: Creating...
+local_file.generate_ansible_inventory: Provisioning with 'local-exec'...
+local_file.generate_ansible_inventory (local-exec): Executing: ["/bin/sh" "-c" "chmod a-x ../../ansible/inventory"]
+local_file.generate_ansible_inventory: Creation complete after 0s [id=7eb16f96cbe45c891272af43cb47f94731fe54b8]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.89.224"
+external_ip_address_db = "51.250.95.242"
+
+$ cd ../../ansible
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.89.224
+
+[db]
+dbserver ansible_host=51.250.95.242
 ```
 
 </details>
