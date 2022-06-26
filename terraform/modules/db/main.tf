@@ -36,6 +36,7 @@ resource "yandex_compute_instance" "db" {
 }
 
 resource "null_resource" "db_provisioning" {
+  count = var.enable_provision ? 1 : 0
   triggers = {
     db_id = yandex_compute_instance.db.id
   }

@@ -815,6 +815,7 @@ lb_ip_address = "51.250.76.174"
 - Refactored the infrastructure definition using modules.
 - Created the `prod` and `stage` infrastructures.
 - Used the "s3" backend to store Terraform state in an object bucket.
+- Implemented the VM provisioners disabling.
 
 <details><summary>Details</summary>
 

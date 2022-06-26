@@ -36,6 +36,7 @@ resource "yandex_compute_instance" "app" {
 }
 
 resource "null_resource" "app_provisioning" {
+  count = var.enable_provision ? 1 : 0
   triggers = {
     db_ip = var.db_ip
   }
