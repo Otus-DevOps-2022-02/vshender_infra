@@ -1279,6 +1279,7 @@ $ cd ..
 - Created the `stage` infrastructure.
 - Added an inventory file.
 - Configured Ansible using the `ansible.cfg` file.
+- Added host groups.
 
 <details><summary>Details</summary>
 
@@ -1342,6 +1343,18 @@ appserver | CHANGED | rc=0 >>
 $ ansible dbserver -m command -a uptime
 dbserver | CHANGED | rc=0 >>
  14:26:57 up 11 min,  1 user,  load average: 0.08, 0.02, 0.01
+```
+
+Check the host group:
+```
+$ ansible app -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
 
 </details>
