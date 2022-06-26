@@ -1285,6 +1285,7 @@ $ cd ..
 - Cloned the application repository to the app server.
 - Added the application cloning playbook.
 - Implemented an inventory file generation.
+- Added a dynamic inventory.
 
 <details><summary>Details</summary>
 
@@ -1520,5 +1521,41 @@ appserver ansible_host=51.250.89.224
 [db]
 dbserver ansible_host=51.250.95.242
 ```
+
+Check the dynamic inventory (uncomment the dynamic inventory file usage in `ansible.cfg`):
+```
+$ ./inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.89.224"
+    ]
+  },
+  "db": {
+    "hosts": [
+      "51.250.95.242"
+    ]
+  }
+}
+
+$ ansible all -m ping
+51.250.89.224 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+51.250.95.242 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Useful links:
+- [Динамическое инвентори в Ansible](https://nklya.medium.com/%D0%B4%D0%B8%D0%BD%D0%B0%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B8%D0%BD%D0%B2%D0%B5%D0%BD%D1%82%D0%BE%D1%80%D0%B8-%D0%B2-ansible-9ee880d540d6)
 
 </details>
