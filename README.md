@@ -1566,6 +1566,7 @@ Useful links:
 - Disabled provisioning in Terraform infrastructure definition.
 - Implemented MongoDB configuration.
 - Implemented Puma HTTP server configuration.
+- Implemented the application deployment.
 
 <details><summary>Details</summary>
 
@@ -1704,5 +1705,32 @@ changed: [appserver]
 PLAY RECAP *******************************************************************************************************
 appserver                  : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+Deploy the application:
+```
+$ ansible-playbook reddit_app.yml --limit app --tags deploy-tag
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Install Git] ***********************************************************************************************
+changed: [appserver]
+
+TASK [Fetch the latest version of application code] **************************************************************
+changed: [appserver]
+
+TASK [Bundle install] ********************************************************************************************
+ok: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.95.160:9292/ and check the application.
 
 </details>
