@@ -1280,6 +1280,7 @@ $ cd ..
 - Added an inventory file.
 - Configured Ansible using the `ansible.cfg` file.
 - Added host groups.
+- Added a YAML inventory file.
 
 <details><summary>Details</summary>
 
@@ -1349,6 +1350,25 @@ Check the host group:
 ```
 $ ansible app -m ping
 appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Check the YAML inventory:
+```
+$ ansible all -i inventory.yml -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+dbserver | SUCCESS => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3"
     },
