@@ -1559,3 +1559,39 @@ Useful links:
 - [Динамическое инвентори в Ansible](https://nklya.medium.com/%D0%B4%D0%B8%D0%BD%D0%B0%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B8%D0%BD%D0%B2%D0%B5%D0%BD%D1%82%D0%BE%D1%80%D0%B8-%D0%B2-ansible-9ee880d540d6)
 
 </details>
+
+
+## Homework #11: ansible-2
+
+- Disabled provisioning in Terraform infrastructure definition.
+
+<details><summary>Details</summary>
+
+Recreate the `stage` infrastructure without provisioning:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 7 destroyed.
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.95.160"
+external_ip_address_db = "51.250.81.186"
+
+$ cd ../../ansible
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.95.160
+
+[db]
+dbserver ansible_host=51.250.81.186
+```
+
+</details>
