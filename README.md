@@ -1564,6 +1564,7 @@ Useful links:
 ## Homework #11: ansible-2
 
 - Disabled provisioning in Terraform infrastructure definition.
+- Implemented MongoDB configuration.
 
 <details><summary>Details</summary>
 
@@ -1592,6 +1593,41 @@ appserver ansible_host=51.250.95.160
 
 [db]
 dbserver ansible_host=51.250.81.186
+```
+
+Configure MongoDB:
+```
+$ ansible-playbook reddit_app.yml --check --limit db
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY RECAP *******************************************************************************************************
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ ansible-playbook reddit_app.yml --limit db
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY RECAP *******************************************************************************************************
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 </details>
