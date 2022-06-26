@@ -814,6 +814,7 @@ lb_ip_address = "51.250.76.174"
 - Created separate VM instances for the DB and the application.
 - Refactored the infrastructure definition using modules.
 - Created the `prod` and `stage` infrastructures.
+- Used the "s3" backend to store Terraform state in an object bucket.
 
 <details><summary>Details</summary>
 
@@ -1156,6 +1157,114 @@ $ terraform destroy -auto-approve
 ...
 
 Destroy complete! Resources: 6 destroyed.
+
+$ cd ..
+```
+
+Create a bucket for Terraform state storage:
+```
+$ terraform init
+...
+
+$ terraform apply -auto-approve
+...
+Plan: 2 to add, 0 to change, 0 to destroy.
+yandex_iam_service_account_static_access_key.sa_static_key: Creating...
+yandex_iam_service_account_static_access_key.sa_static_key: Creation complete after 2s [id=aje1h800b2gkr2583o01]
+yandex_storage_bucket.tfstate_storage: Creating...
+yandex_storage_bucket.tfstate_storage: Creation complete after 2s [id=otus-tfstate-storage]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+```
+
+Configure the `aws` CLI tool (obtain info about access key from the Terraform state):
+```
+$ aws configure
+AWS Access Key ID [None]: YC*********************4c
+AWS Secret Access Key [None]: YC************************************FP
+Default region name [None]:
+Default output format [None]:
+
+$ aws --endpoint-url=https://storage.yandexcloud.net s3 ls --recursive s3://otus-vshender-tfstate-storage
+
+```
+
+Create `prod` and `stage` infrastructures saving Terraform state in the object bucket:
+```
+$ cd prod
+
+$ rm -if terraform.tfstate terraform.tfstate.backup
+
+$ terraform init
+Initializing modules...
+
+Initializing the backend...
+
+Successfully configured the backend "s3"! Terraform will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Reusing previous version of yandex-cloud/yandex from the dependency lock file
+- Reusing previous version of hashicorp/null from the dependency lock file
+- Using previously-installed yandex-cloud/yandex v0.73.0
+- Using previously-installed hashicorp/null v3.1.1
+
+Terraform has been successfully initialized!
+...
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.80.174"
+external_ip_address_db = "51.250.87.241"
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 6 destroyed.
+
+$ aws --endpoint-url=https://storage.yandexcloud.net s3 ls --recursive s3://otus-vshender-tfstate-storage
+2022-06-26 14:33:50      11464 prod/terraform.tfstate
+
+$ cd ../stage
+
+$ rm -if terraform.tfstate terraform.tfstate.backup
+
+$ terraform init
+Initializing modules...
+
+Initializing the backend...
+
+Successfully configured the backend "s3"! Terraform will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Reusing previous version of yandex-cloud/yandex from the dependency lock file
+- Reusing previous version of hashicorp/null from the dependency lock file
+- Using previously-installed hashicorp/null v3.1.1
+- Using previously-installed yandex-cloud/yandex v0.73.0
+
+Terraform has been successfully initialized!
+...
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.77.166"
+external_ip_address_db = "51.250.89.233"
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 6 destroyed.
+
+$ aws --endpoint-url=https://storage.yandexcloud.net s3 ls --recursive s3://otus-vshender-tfstate-storage
+2022-06-26 14:36:02        155 prod/terraform.tfstate
+2022-06-26 14:41:53        155 stage/terraform.tfstate
 
 $ cd ..
 ```
