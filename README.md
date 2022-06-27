@@ -1567,6 +1567,7 @@ Useful links:
 - Implemented MongoDB configuration.
 - Implemented Puma HTTP server configuration.
 - Implemented the application deployment.
+- Splitted the playbook into several plays.
 
 <details><summary>Details</summary>
 
@@ -1732,5 +1733,79 @@ appserver                  : ok=5    changed=3    unreachable=0    failed=0    s
 ```
 
 Open http://51.250.95.160:9292/ and check the application.
+
+Check the playbook with separated plays:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.79.219"
+external_ip_address_db = "51.250.93.216"
+internal_ip_address_db = "192.168.10.18
+
+$ cd ../../ansible
+
+$ ansible-playbook reddit_app2.yml
+
+PLAY [Configure MongoDB] *****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY [Configure application] *************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [appserver]
+
+TASK [Add config for DB connection] ******************************************************************************
+changed: [appserver]
+
+TASK [Enable Puma] ***********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY [Deploy application] ****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Install Git] ***********************************************************************************************
+changed: [appserver]
+
+TASK [Fetch the latest version of application code] **************************************************************
+changed: [appserver]
+
+TASK [Bundle install] ********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.79.219:9292/ and check the application.
 
 </details>
