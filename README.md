@@ -1568,6 +1568,7 @@ Useful links:
 - Implemented Puma HTTP server configuration.
 - Implemented the application deployment.
 - Splitted the playbook into several plays.
+- Splitted the playbook into several playbooks.
 
 <details><summary>Details</summary>
 
@@ -1600,7 +1601,7 @@ dbserver ansible_host=51.250.81.186
 
 Configure MongoDB:
 ```
-$ ansible-playbook reddit_app.yml --check --limit db
+$ ansible-playbook reddit_app_one_play.yml --check --limit db
 
 PLAY [Configure hosts & deploy application] **********************************************************************
 
@@ -1616,7 +1617,7 @@ changed: [dbserver]
 PLAY RECAP *******************************************************************************************************
 dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
-$ ansible-playbook reddit_app.yml --limit db
+$ ansible-playbook reddit_app_one_play.yml --limit db
 
 PLAY [Configure hosts & deploy application] **********************************************************************
 
@@ -1684,7 +1685,7 @@ $ ./inventory.sh --list
   }
 }
 
-$ ansible-playbook reddit_app.yml --limit app --tags app-tag
+$ ansible-playbook reddit_app_one_play.yml --limit app --tags app-tag
 
 PLAY [Configure hosts & deploy application] **********************************************************************
 
@@ -1709,7 +1710,7 @@ appserver                  : ok=5    changed=4    unreachable=0    failed=0    s
 
 Deploy the application:
 ```
-$ ansible-playbook reddit_app.yml --limit app --tags deploy-tag
+$ ansible-playbook reddit_app_one_play.yml --limit app --tags deploy-tag
 
 PLAY [Configure hosts & deploy application] **********************************************************************
 
@@ -1754,7 +1755,7 @@ internal_ip_address_db = "192.168.10.18
 
 $ cd ../../ansible
 
-$ ansible-playbook reddit_app2.yml
+$ ansible-playbook reddit_app_multiple_plays.yml
 
 PLAY [Configure MongoDB] *****************************************************************************************
 
@@ -1807,5 +1808,34 @@ dbserver                   : ok=3    changed=2    unreachable=0    failed=0    s
 ```
 
 Open http://51.250.79.219:9292/ and check the application.
+
+Check the splitted playbooks:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.83.235"
+external_ip_address_db = "51.250.79.18"
+internal_ip_address_db = "192.168.10.13"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.83.235:9292/ and check the application.
 
 </details>
