@@ -1,0 +1,19 @@
+---
+plugin: yc_compute
+
+auth_kind: serviceaccountfile
+service_account_file: ../yc-svc-key.json
+
+folders:
+  - b1go0bbc4eormvjuv1mq
+
+filters:
+  - status == 'RUNNING'
+
+compose:
+  ansible_host: network_interfaces[0].primary_v4_address.one_to_one_nat.address
+  internal_ip: network_interfaces[0].primary_v4_address.address
+
+groups:
+  db: labels['tags'] == 'reddit-db'
+  app: labels['tags'] == 'reddit-app'

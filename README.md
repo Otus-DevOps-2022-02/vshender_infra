@@ -1569,6 +1569,7 @@ Useful links:
 - Implemented the application deployment.
 - Splitted the playbook into several plays.
 - Splitted the playbook into several playbooks.
+- Configured [Yandex.Cloud inventory plugin](https://github.com/ansible/ansible/pull/61722).
 
 <details><summary>Details</summary>
 
@@ -1837,5 +1838,64 @@ dbserver                   : ok=3    changed=2    unreachable=0    failed=0    s
 ```
 
 Open http://51.250.83.235:9292/ and check the application.
+
+Test [Yandex.Cloud inventory plugin](https://github.com/ansible/ansible/pull/61722) (I had to patch it in order to make it work):
+```
+$ pip install -r requirements.txt
+...
+Installing collected packages: pyjwt, protobuf, grpcio, googleapis-common-protos, yandexcloud
+Successfully installed googleapis-common-protos-1.56.3 grpcio-1.47.0 protobuf-4.21.2 pyjwt-2.4.0 yandexcloud-0.10.1
+
+$ ansible-inventory -i inventory_yc_compute.yml --playbook-dir ./ --vars --graph
+@all:
+  |--@app:
+  |  |--51.250.83.235
+  |  |  |--{ansible_host = 51.250.83.235}
+  |  |  |--{internal_ip = 192.168.10.27}
+  |--@db:
+  |  |--51.250.79.18
+  |  |  |--{ansible_host = 51.250.79.18}
+  |  |  |--{internal_ip = 192.168.10.13}
+  |--@ungrouped:
+
+```
+
+I don't use this inventory plugin for my playbooks because I parameterized the application host with the `db_host` variable (the internal IP of the DB host).  This plugin doesn't allow one host to be parameterized with some data from another host.
+```
+$ ansible-playbook -i inventory_yc_compute.yml site.yml --check
+
+PLAY [Configure MongoDB] *****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [51.250.79.18]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [51.250.79.18]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [51.250.79.18]
+
+PLAY [Configure application] *************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [51.250.83.235]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [51.250.83.235]
+
+TASK [Add config for DB connection] ******************************************************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: ansible.errors.AnsibleUndefinedVariable: 'db_host' is undefined
+fatal: [51.250.83.235]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'db_host' is undefined"}
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+
+PLAY RECAP *******************************************************************************************************
+51.250.83.235              : ok=2    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+51.250.79.18               : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Useful links:
+
+- [Ansible Custom Inventory Plugin - a hands-on, quick start guide](https://termlen0.github.io/2019/11/16/observations/)
 
 </details>

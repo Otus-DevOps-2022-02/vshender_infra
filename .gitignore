@@ -16,3 +16,6 @@ packer/variables.json
 *.backup
 
 *.retry
+
+*.pyc
+__pycache__
