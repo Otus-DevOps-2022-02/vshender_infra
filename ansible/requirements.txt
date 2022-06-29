@@ -1,2 +1,1 @@
 ansible>=2.4
-yandexcloud==0.170.0

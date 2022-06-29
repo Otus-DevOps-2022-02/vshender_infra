@@ -1983,6 +1983,7 @@ Destroy complete! Resources: 5 destroyed.
 ## Homework #12: ansible-3
 
 - Created roles for the DB and the application configuration.
+- Configured the prod and the stage environments.
 
 <details><summary>Details</summary>
 
@@ -2008,6 +2009,94 @@ $ ansible-playbook site.yml
 PLAY RECAP *******************************************************************************************************
 appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Check the prod and stage environments deployment:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 4 destroyed.
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.88.81"
+external_ip_address_db = "51.250.86.134"
+internal_ip_address_db = "192.168.10.25"
+
+$ cd ../../ansible
+
+$ ansible-playbook -i environments/stage/inventory playbooks/site.yml
+
+PLAY [Configure MongoDB] **********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************
+ok: [dbserver]
+
+TASK [db : Show info about the env this host belongs to] ****************************************************
+ok: [dbserver] => {
+    "msg": "This host is in stage environment"
+}
+
+...
+
+PLAY RECAP *************************************************************************************************
+appserver                  : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+
+$ cd ../prod
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.70.10"
+external_ip_address_db = "51.250.86.36"
+internal_ip_address_db = "192.168.10.25"
+
+$ cd ../../ansible
+
+$ ansible-playbook -i environments/prod/inventory playbooks/site.yml
+
+PLAY [Configure MongoDB] **********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************
+ok: [dbserver]
+
+TASK [db : Show info about the env this host belongs to] ****************************************************
+ok: [dbserver] => {
+    "msg": "This host is in prod environment"
+}
+
+...
+
+PLAY RECAP *************************************************************************************************
+appserver                  : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ cd ../terraform/prod
+
+$ terraform destroy --auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
 ```
 
 </details>

@@ -37,5 +37,5 @@ variable "public_key_path" {
 
 variable "ansible_inventory" {
   description = "Path to the Ansible inventory file to generate"
-  default     = "../../ansible/inventory"
+  default     = "../../ansible/environments/stage/inventory"
 }
