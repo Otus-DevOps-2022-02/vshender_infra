@@ -1984,6 +1984,7 @@ Destroy complete! Resources: 5 destroyed.
 
 - Created roles for the DB and the application configuration.
 - Configured the prod and the stage environments.
+- Made the application available on port 80 using `jdauphant.nginx` role.
 
 <details><summary>Details</summary>
 
@@ -2097,6 +2098,50 @@ $ terraform destroy --auto-approve
 ...
 
 Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+```
+
+Check the `jdauphant.nginx` role.
+```
+$ cd ../stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.70.10"
+external_ip_address_db = "51.250.74.115"
+internal_ip_address_db = "192.168.10.3"
+
+$ cd ../../ansible
+
+$ ansible-galaxy install -r environments/stage/requirements.yml
+Starting galaxy role install process
+- downloading role 'nginx', owned by jdauphant
+- downloading role from https://github.com/jdauphant/ansible-role-nginx/archive/v2.21.1.tar.gz
+- extracting jdauphant.nginx to /Users/vshender/.../vshender_infra/ansible/roles/jdauphant.nginx
+- jdauphant.nginx (v2.21.1) was installed successfully
+
+$ ansible-playbook -i environments/stage/inventory playbooks/site.yml
+...
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=28   changed=19   unreachable=0    failed=0    skipped=17   rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.70.10/ and check the application.
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
 ```
 
 </details>
