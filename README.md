@@ -1570,6 +1570,7 @@ Useful links:
 - Splitted the playbook into several plays.
 - Splitted the playbook into several playbooks.
 - Configured [Yandex.Cloud inventory plugin](https://github.com/ansible/ansible/pull/61722).
+- Used Ansible for Packer images provisioning.
 
 <details><summary>Details</summary>
 
@@ -1897,5 +1898,83 @@ PLAY RECAP *********************************************************************
 Useful links:
 
 - [Ansible Custom Inventory Plugin - a hands-on, quick start guide](https://termlen0.github.io/2019/11/16/observations/)
+
+Create base images for the DB and the application using Ansible for images provisioning:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 4 destroyed.
+
+$ cd ../../
+
+$ packer build -var-file=packer/variables.json packer/app.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-app-base-1656502406 (id: fd85on9l66kfloap9i9l) with family name reddit-app-base
+
+$ packer build -var-file=packer/variables.json packer/db.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-db-base-1656503656 (id: fd8h8fuoqmepfmgfiqrr) with family name reddit-db-base
+
+$ yc compute image list
++----------------------+----------------------------+-----------------+----------------------+--------+
+|          ID          |            NAME            |     FAMILY      |     PRODUCT IDS      | STATUS |
++----------------------+----------------------------+-----------------+----------------------+--------+
+| fd84km3m351crgj9upkq | reddit-app-base-1655934193 | reddit-app-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd85on9l66kfloap9i9l | reddit-app-base-1656502406 | reddit-app-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd89dv82hadttcirp1hr | reddit-base-1655736298     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8a5el5f41qgp5qjd8p | reddit-full-1655742289     | reddit-full     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8bvuaat05ogds90rte | reddit-db-base-1655933993  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8h8fuoqmepfmgfiqrr | reddit-db-base-1656503656  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+----------------------------+-----------------+----------------------+--------+
+```
+
+Check the new images:
+```
+$ cd terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.92"
+external_ip_address_db = "51.250.71.20"
+internal_ip_address_db = "192.168.10.12"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.94.92:9292/ and check the application.
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+```
+
+- Useful links:
+
+- [Use different signature algorithm for SSH host key #69](https://github.com/hashicorp/packer-plugin-ansible/issues/69)
+- [ansible provisioner fails with "failed to transfer file" #11783](https://github.com/hashicorp/packer/issues/11783)
+- [Packer/Ansible: Unable to acquire dpkg lock](https://joelvasallo.com/packer-ansible-unable-to-acquire-dpkg-lock-c7eb5863127d)
+- [Ansible-lint warn 301 Commands should not change things if nothing needs doing #144](https://github.com/geerlingguy/ansible-role-certbot/issues/144)
+- [Ansible-lint - Rule 306](https://xan.manning.io/2019/03/21/ansible-lint-rule-306.html#:~:text=%5B306%5D%20Shells%20that%20use%20pipes,considered%20a%20success%20by%20Ansible.)
 
 </details>

@@ -1,6 +1,6 @@
 {
   "variables": {
-    "service_account_key_file": "../yc-svc-key.json",
+    "service_account_key_file": "yc-svc-key.json",
     "folder_id": null,
     "source_image_family": "ubuntu-1604-lts",
     "ssh_username": "ubuntu",
@@ -21,9 +21,11 @@
   ],
   "provisioners": [
     {
-      "type": "shell",
-      "script": "scripts/install_ruby.sh",
-      "execute_command": "sudo {{.Path}}"
+      "type": "ansible",
+      "playbook_file": "ansible/packer_app.yml",
+      "user": "{{ user `ssh_username` }}",
+      "extra_arguments": [ "--scp-extra-args", "'-O'" ],
+      "ansible_ssh_extra_args": "-oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
     }
   ]
 }
