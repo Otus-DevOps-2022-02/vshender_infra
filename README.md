@@ -1978,3 +1978,36 @@ Destroy complete! Resources: 5 destroyed.
 - [Ansible-lint - Rule 306](https://xan.manning.io/2019/03/21/ansible-lint-rule-306.html#:~:text=%5B306%5D%20Shells%20that%20use%20pipes,considered%20a%20success%20by%20Ansible.)
 
 </details>
+
+
+## Homework #12: ansible-3
+
+- Created roles for the DB and the application configuration.
+
+<details><summary>Details</summary>
+
+Check the deployment with roles:
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.74.84"
+external_ip_address_db = "51.250.81.2"
+internal_ip_address_db = "192.168.10.8"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+</details>

@@ -2,26 +2,5 @@
 - name: Configure application
   hosts: app
   become: true
-  tasks:
-    - name: Add unit file for Puma
-      copy:
-        src: files/puma.service
-        dest: /etc/systemd/system/puma.service
-        mode: 0644
-      notify: reload puma
-
-    - name: Add config for DB connection
-      template:
-        src: templates/db_config.j2
-        dest: /home/ubuntu/db_config
-        owner: ubuntu
-        group: ubuntu
-        mode: 0644
-      notify: reload puma
-
-    - name: Enable Puma
-      systemd: name=puma enabled=yes
-
-  handlers:
-    - name: reload puma
-      service: name=puma state=restarted
+  roles:
+    - app
