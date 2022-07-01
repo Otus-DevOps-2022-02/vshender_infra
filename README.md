@@ -1986,6 +1986,7 @@ Destroy complete! Resources: 5 destroyed.
 - Configured the prod and the stage environments.
 - Made the application available on port 80 using `jdauphant.nginx` role.
 - Used Ansible Vault to store secrets.
+- Configured Github CI to run linters.
 
 <details><summary>Details</summary>
 

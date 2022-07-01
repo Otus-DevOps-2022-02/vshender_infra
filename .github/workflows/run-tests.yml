@@ -22,5 +22,36 @@ jobs:
         ref: 2022-02
         path: "./otus-homeworks/"
 
+    - name: Install ansible
+      run: sudo pip install -r ansible/requirements.txt
+    - name: Install terraform
+      run: |
+        curl -Ls https://hashicorp-releases.website.yandexcloud.net/terraform/1.1.9/terraform_1.1.9_linux_amd64.zip -o /tmp/terraform.zip
+        sudo unzip -o -d /usr/local/bin /tmp/terraform.zip
+    - name: Install tflint
+      run: |
+        curl -Ls $(curl -Ls https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E "https://.+_linux_amd64.zip") -o /tmp/tflint.zip
+        sudo unzip -d /usr/local/bin /tmp/tflint.zip
+    - name: Install ansible-lint
+      run: sudo pip install ansible-lint
+    - name: Install third-party roles
+      run: cd ansible && ansible-galaxy install -r environments/stage/requirements.yml
+
     - name: Run tests
       run: curl https://raw.githubusercontent.com/express42/otus-homeworks/2022-02/run.sh | bash
+
+    - name: Validate packer
+      run: |
+        for f in packer/*.json; do
+          echo -n "$f: ";
+          packer validate -var-file=packer/variables.json.example $f;
+        done
+    - name: Validate terraform
+      run: |
+        cd terraform/stage && terraform init -backend=false && terraform validate && cd ../..
+        cd terraform/prod && terraform init -backend=false && terraform validate && cd ../..
+        tflint terraform/stage
+        tflint terraform/prod
+
+    - name: Validate ansible
+      run: cd ansible && echo "test" > vault.key && ansible-lint -x fqcn-builtins --exclude roles/jdauphant.nginx playbooks
