@@ -2219,4 +2219,40 @@ logout
 Connection to 51.250.1.5 closed.
 ```
 
+Check that the dynamic inventory works:
+```
+$ environments/stage/inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.65.251"
+    ],
+    "vars": {
+      "db_host": "192.168.10.22"
+    }
+  },
+  "db": {
+    "hosts": [
+      "51.250.1.5"
+    ]
+  }
+}
+
+$ ansible-playbook -i environments/stage/inventory.sh playbooks/site.yml
+...
+PLAY RECAP *******************************************************************************************************
+51.250.1.5                 : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+51.250.65.251              : ok=23   changed=0    unreachable=0    failed=0    skipped=17   rescued=0    ignored=0
+```
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+```
+
 </details>
