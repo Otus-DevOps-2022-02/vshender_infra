@@ -22,10 +22,7 @@
   "provisioners": [
     {
       "type": "ansible",
-      "playbook_file": "ansible/packer_db.yml",
-      "user": "{{ user `ssh_username` }}",
-      "extra_arguments": [ "--scp-extra-args", "'-O'" ],
-      "ansible_ssh_extra_args": "-oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
+      "playbook_file": "ansible/packer_db.yml"
     }
   ]
 }
