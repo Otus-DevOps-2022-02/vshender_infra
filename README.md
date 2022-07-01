@@ -1985,6 +1985,7 @@ Destroy complete! Resources: 5 destroyed.
 - Created roles for the DB and the application configuration.
 - Configured the prod and the stage environments.
 - Made the application available on port 80 using `jdauphant.nginx` role.
+- Used Ansible Vault to store secrets.
 
 <details><summary>Details</summary>
 
@@ -2142,6 +2143,80 @@ $ terraform destroy -auto-approve
 ...
 
 Destroy complete! Resources: 5 destroyed.
+```
+
+Encrypt users info:
+```
+$ cd ../../ansible
+
+$ ansible-vault encrypt environments/prod/credentials.yml
+Encryption successful
+
+$ ansible-vault encrypt environments/stage/credentials.yml
+Encryption successful
+```
+
+Check that users are created on deployment:
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.65.251"
+external_ip_address_db = "51.250.1.5"
+internal_ip_address_db = "192.168.10.22"
+
+$ cd ../../ansible
+
+$ pip install -r requirements.txt
+...
+Successfully installed passlib-1.7.4
+
+$ ansible-playbook playbooks/site.yml
+...
+
+$ ssh -i ~/.ssh/appuser ubuntu@51.250.65.251
+...
+ubuntu@fhmvuv8v3jit0qahatlu:~$ cat /etc/passwd
+...
+ubuntu:x:1000:1001:Ubuntu:/home/ubuntu:/bin/bash
+admin:x:1001:1002::/home/admin:
+qauser:x:1002:1003::/home/qauser:
+
+ubuntu@fhmvuv8v3jit0qahatlu:~$ cat /etc/group
+...
+ubuntu:x:1001:
+admin:x:1002:
+qauser:x:1003:
+
+ubuntu@fhmvuv8v3jit0qahatlu:~$ exit
+logout
+Connection to 51.250.65.251 closed.
+
+$ ssh -i ~/.ssh/appuser ubuntu@51.250.1.5
+...
+ubuntu@fhm0f43budki7i44u58o:~$ cat /etc/passwd
+...
+ubuntu:x:1000:1001:Ubuntu:/home/ubuntu:/bin/bash
+mongodb:x:108:65534::/home/mongodb:/bin/false
+admin:x:1001:1002::/home/admin:
+qauser:x:1002:1003::/home/qauser:
+
+ubuntu@fhm0f43budki7i44u58o:~$ cat /etc/group
+...
+ubuntu:x:1001:
+mongodb:x:112:mongodb
+admin:x:1002:
+qauser:x:1003:
+
+ubuntu@fhm0f43budki7i44u58o:~$ exit
+logout
+Connection to 51.250.1.5 closed.
 ```
 
 </details>
