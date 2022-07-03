@@ -2257,3 +2257,56 @@ Destroy complete! Resources: 5 destroyed.
 ```
 
 </details>
+
+
+## Homework #13: ansible-4
+
+- Created `Vagrantfile` for the local infrastructure.
+
+<details><summary>Details</summary>
+
+Check Vagrant:
+```
+$ cd ansible
+
+$ vagrant up
+...
+
+$ vagrant box list
+ubuntu/focal64  (virtualbox, 20210304.0.0)
+ubuntu/xenial64 (virtualbox, 20210316.0.0)
+
+$ vagrant status
+Current machine states:
+
+dbserver                  running (virtualbox)
+appserver                 running (virtualbox)
+
+This environment represents multiple VMs. The VMs are all listed
+above with their current state. For more information about a specific
+VM, run `vagrant status NAME`.
+
+$ vagrant ssh appserver
+Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-204-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+0 packages can be updated.
+0 of these updates are security updates.
+
+vagrant@appserver:~$ ping -c 2 192.168.56.20
+PING 192.168.56.20 (192.168.56.20) 56(84) bytes of data.
+64 bytes from 192.168.56.20: icmp_seq=1 ttl=64 time=0.095 ms
+64 bytes from 192.168.56.20: icmp_seq=2 ttl=64 time=0.043 ms
+
+--- 192.168.56.20 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 999ms
+rtt min/avg/max/mdev = 0.043/0.069/0.095/0.026 ms
+
+vagrant@appserver:~$ exit
+logout
+```
+
+</details>

@@ -23,3 +23,9 @@ __pycache__
 ansible/roles/jdauphant.nginx
 
 vault.key
+
+.vagrant/
+*.log
+.molecule
+.cache
+.pytest_cache
