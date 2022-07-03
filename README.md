@@ -2263,6 +2263,7 @@ Destroy complete! Resources: 5 destroyed.
 
 - Created `Vagrantfile` for the local infrastructure.
 - Added provisioning for the local infrastructure.
+- Added tests for the `db` role.
 
 <details><summary>Details</summary>
 
@@ -2333,6 +2334,226 @@ $ vagrant destroy -f
 ==> appserver: Destroying VM and associated drives...
 ==> dbserver: Forcing shutdown of VM...
 ==> dbserver: Destroying VM and associated drives...
+```
+
+A Molecule scenario creation for the `db` role:
+```
+$ pip install -r requirements.txt
+...
+Successfully installed arrow-1.2.2 binaryornot-0.4.4 cerberus-1.3.2 chardet-5.0.0 click-8.1.3 click-help-colors-0.9.1 cookiecutter-2.1.1 distro-1.7.0 jinja2-time-0.2.0 molecule-4.0.0 molecule-vagrant-1.0.0 pytest-testinfra-6.8.0 python-dateutil-2.8.2 python-slugify-6.1.2 python-vagrant-1.0.0 selinux-0.2.1 testinfra-6.0.0 text-unidecode-1.3
+
+$ molecule --version
+molecule 4.0.0 using python 3.10
+    ansible:2.13.1
+    delegated:4.0.0 from molecule
+
+$ ansible --version
+ansible [core 2.13.1]
+  config file = .../vshender_infra/ansible/ansible.cfg
+  configured module search path = ['/Users/vshender/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /Users/vshender/.virtualenvs/vshender_infra/lib/python3.10/site-packages/ansible
+  ansible collection location = /Users/vshender/.ansible/collections:/usr/share/ansible/collections
+  executable location = /Users/vshender/.virtualenvs/vshender_infra/bin/ansible
+  python version = 3.10.4 (main, May 19 2022, 21:19:38) [Clang 12.0.5 (clang-1205.0.22.9)]
+  jinja version = 3.1.2
+  libyaml = True
+
+$ cd roles/db
+
+$ molecule init scenario --role-name db --driver-name vagrant
+INFO     Initializing new scenario default...
+INFO     Initialized scenario in .../vshender_infra/ansible/roles/db/molecule/default successfully.
+```
+
+Playing with Molecule:
+```
+$ molecule create
+INFO     default scenario test matrix: dependency, create, prepare
+...
+INFO     Running default > create
+
+PLAY [Create] ******************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Running default > prepare
+
+PLAY [Prepare] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+instance                   : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ molecule list
+INFO     Running default > list
+                ╷             ╷                  ╷               ╷         ╷
+  Instance Name │ Driver Name │ Provisioner Name │ Scenario Name │ Created │ Converged
+╶───────────────┼─────────────┼──────────────────┼───────────────┼─────────┼───────────╴
+  instance      │ vagrant     │ ansible          │ default       │ true    │ false
+                ╵             ╵                  ╵               ╵         ╵
+
+$ molecule login -h instance
+INFO     Running default > login
+Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-204-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+0 packages can be updated.
+0 of these updates are security updates.
+
+New release '18.04.6 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Last login: Sun Jul  3 13:35:42 2022 from 10.0.2.2
+vagrant@instance:~$ exit
+logout
+
+$ molecule converge
+INFO     default scenario test matrix: dependency, create, prepare, converge
+...
+INFO     Running default > converge
+
+PLAY [Converge] ****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+instance                   : ok=9    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ molecule list
+INFO     Running default > list
+                ╷             ╷                  ╷               ╷         ╷
+  Instance Name │ Driver Name │ Provisioner Name │ Scenario Name │ Created │ Converged
+╶───────────────┼─────────────┼──────────────────┼───────────────┼─────────┼───────────╴
+  instance      │ vagrant     │ ansible          │ default       │ true    │ true
+                ╵             ╵                  ╵               ╵         ╵
+
+$ molecule verify
+molecule verify
+INFO     default scenario test matrix: verify
+...
+INFO     Running default > verify
+INFO     Executing Testinfra tests found in .../vshender_infra/ansible/roles/db/molecule/default/tests/...
+============================= test session starts ==============================
+platform darwin -- Python 3.10.4, pytest-7.1.2, pluggy-1.0.0
+rootdir: /Users/vshender
+plugins: testinfra-6.0.0, testinfra-6.8.0
+collected 3 items
+
+molecule/default/tests/test_default.py ...                               [100%]
+
+============================== 3 passed in 4.53s ===============================
+INFO     Verifier completed successfully.
+
+$ molecule destroy
+INFO     default scenario test matrix: dependency, cleanup, destroy
+...
+
+PLAY [Destroy] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Pruning extra files from scenario ephemeral directory
+
+$ molecule list
+INFO     Running default > list
+                ╷             ╷                  ╷               ╷         ╷
+  Instance Name │ Driver Name │ Provisioner Name │ Scenario Name │ Created │ Converged
+╶───────────────┼─────────────┼──────────────────┼───────────────┼─────────┼───────────╴
+  instance      │ vagrant     │ ansible          │ default       │ false   │ false
+                ╵             ╵                  ╵               ╵         ╵
+```
+
+Run the `db` role tests:
+```
+$ molecule test
+INFO     default scenario test matrix: dependency, lint, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy
+...
+INFO     Running default > destroy
+
+PLAY [Destroy] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=2    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+INFO     Running default > syntax
+
+playbook: .../vshender_infra/ansible/roles/db/molecule/default/converge.yml
+INFO     Running default > create
+
+PLAY [Create] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Running default > prepare
+
+PLAY [Prepare] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+instance                   : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Running default > converge
+
+PLAY [Converge] ****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+instance                   : ok=9    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Running default > idempotence
+
+PLAY [Converge] ****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+instance                   : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Idempotence completed successfully.
+INFO     Running default > side_effect
+WARNING  Skipping, side effect playbook not configured.
+INFO     Running default > verify
+INFO     Executing Testinfra tests found in .../vshender_infra/ansible/roles/db/molecule/default/tests/...
+============================= test session starts ==============================
+platform darwin -- Python 3.10.4, pytest-7.1.2, pluggy-1.0.0
+rootdir: /Users/vshender
+plugins: testinfra-6.0.0, testinfra-6.8.0
+collected 3 items
+
+molecule/default/tests/test_default.py ...                               [100%]
+
+============================== 3 passed in 4.27s ===============================
+INFO     Verifier completed successfully.
+INFO     Running default > cleanup
+WARNING  Skipping, cleanup playbook not configured.
+INFO     Running default > destroy
+
+PLAY [Destroy] *****************************************************************
+
+...
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+INFO     Pruning extra files from scenario ephemeral directory
 ```
 
 </details>
