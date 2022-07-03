@@ -2262,6 +2262,7 @@ Destroy complete! Resources: 5 destroyed.
 ## Homework #13: ansible-4
 
 - Created `Vagrantfile` for the local infrastructure.
+- Added provisioning for the local infrastructure.
 
 <details><summary>Details</summary>
 
@@ -2307,6 +2308,31 @@ rtt min/avg/max/mdev = 0.043/0.069/0.095/0.026 ms
 
 vagrant@appserver:~$ exit
 logout
+```
+
+Check the local infrastructure provisioning:
+```
+$ vagrant provision
+...
+
+PLAY RECAP *********************************************************************
+dbserver                   : ok=9    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+...
+
+PLAY RECAP *********************************************************************
+appserver                  : ok=30   changed=18   unreachable=0    failed=0    skipped=18   rescued=0    ignored=0
+```
+
+Open http://192.168.56.20/ and check the application.
+
+Destroy the local infrastructure:
+```
+$ vagrant destroy -f
+==> appserver: Forcing shutdown of VM...
+==> appserver: Destroying VM and associated drives...
+==> dbserver: Forcing shutdown of VM...
+==> dbserver: Destroying VM and associated drives...
 ```
 
 </details>

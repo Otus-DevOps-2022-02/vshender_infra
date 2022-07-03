@@ -1,3 +1,4 @@
+deploy_user: ubuntu
 app_nginx:
   server_name: reddit
   port: 80
