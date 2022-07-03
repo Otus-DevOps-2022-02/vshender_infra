@@ -2,28 +2,5 @@
 - name: Install MongoDB
   hosts: all
   become: true
-  tasks:
-    - name: Add APT key
-      apt_key:
-        url: https://www.mongodb.org/static/pgp/server-3.2.asc
-        state: present
-
-    - name: Add APT repository
-      apt_repository:
-        repo: deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse
-        state: present
-        update_cache: true
-
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released
-      shell: set -o pipefail && while ps -ef | grep apt | grep -v grep > /dev/null; do sleep 5; done
-      changed_when: false
-
-    - name: Install mongodb package
-      apt:
-        name: mongodb-org
-        state: present
-
-    - name: Configure service supervisor
-      systemd:
-        name: mongod
-        enabled: true
+  roles:
+    - db

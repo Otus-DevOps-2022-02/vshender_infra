@@ -2264,6 +2264,7 @@ Destroy complete! Resources: 5 destroyed.
 - Created `Vagrantfile` for the local infrastructure.
 - Added provisioning for the local infrastructure.
 - Added tests for the `db` role.
+- Used the `db` and `app` roles for packer provisioning.
 
 <details><summary>Details</summary>
 
