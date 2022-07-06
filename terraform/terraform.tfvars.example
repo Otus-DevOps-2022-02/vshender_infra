@@ -1,8 +1,4 @@
 service_account_key_file = "../yc-svc-key.json"
 cloud_id                 = "abcdef01234567890abc"
 folder_id                = "b1go0bbc4eormvjuv1mq"
-image_id                 = "fd89dv82hadttcirp1hr"
-subnet_id                = "e9bqom95bd1o3fkemarr"
-private_key_path         = "~/.ssh/appuser"
-public_key_path          = "~/.ssh/appuser.pub"
-instance_count           = 2
+service_account_id       = "abcdef01234567890abc"

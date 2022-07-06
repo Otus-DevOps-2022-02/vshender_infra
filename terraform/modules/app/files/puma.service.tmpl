@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/reddit
+Environment=DATABASE_URL=${db_ip}
 ExecStart=/bin/bash -lc 'puma'
 Restart=always
 
