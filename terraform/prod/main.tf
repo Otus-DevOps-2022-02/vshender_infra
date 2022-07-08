@@ -25,6 +25,7 @@ module "app" {
   db_ip            = module.db.internal_ip_address_db
   private_key_path = var.private_key_path
   public_key_path  = var.public_key_path
+  enable_provision = false
 }
 
 module "db" {
@@ -33,13 +34,15 @@ module "db" {
   db_disk_image    = var.db_disk_image
   private_key_path = var.private_key_path
   public_key_path  = var.public_key_path
+  enable_provision = false
 }
 
 resource "local_file" "generate_ansible_inventory" {
   filename = var.ansible_inventory
-  content  = templatefile("files/inventory.tpl", {
-    app_ip_address = module.app.external_ip_address_app,
-    db_ip_address  = module.db.external_ip_address_db
+  content = templatefile("files/inventory.tpl", {
+    app_ip_address         = module.app.external_ip_address_app,
+    db_ip_address          = module.db.external_ip_address_db,
+    db_internal_ip_address = module.db.internal_ip_address_db
   })
 
   provisioner "local-exec" {

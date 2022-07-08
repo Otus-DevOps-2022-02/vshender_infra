@@ -1559,3 +1559,422 @@ Useful links:
 - [Динамическое инвентори в Ansible](https://nklya.medium.com/%D0%B4%D0%B8%D0%BD%D0%B0%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B8%D0%BD%D0%B2%D0%B5%D0%BD%D1%82%D0%BE%D1%80%D0%B8-%D0%B2-ansible-9ee880d540d6)
 
 </details>
+
+
+## Homework #11: ansible-2
+
+- Disabled provisioning in Terraform infrastructure definition.
+- Implemented MongoDB configuration.
+- Implemented Puma HTTP server configuration.
+- Implemented the application deployment.
+- Splitted the playbook into several plays.
+- Splitted the playbook into several playbooks.
+- Configured [Yandex.Cloud inventory plugin](https://github.com/ansible/ansible/pull/61722).
+- Used Ansible for Packer images provisioning.
+
+<details><summary>Details</summary>
+
+Recreate the `stage` infrastructure without provisioning:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 7 destroyed.
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.95.160"
+external_ip_address_db = "51.250.81.186"
+
+$ cd ../../ansible
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.95.160
+
+[db]
+dbserver ansible_host=51.250.81.186
+```
+
+Configure MongoDB:
+```
+$ ansible-playbook reddit_app_one_play.yml --check --limit db
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY RECAP *******************************************************************************************************
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ ansible-playbook reddit_app_one_play.yml --limit db
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY RECAP *******************************************************************************************************
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Configure Puma HTTP server.
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+Terraform will perform the following actions:
+
+  # local_file.generate_ansible_inventory must be replaced
+...
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  + internal_ip_address_db = "192.168.10.18"
+...
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.95.160"
+external_ip_address_db = "51.250.81.186"
+internal_ip_address_db = "192.168.10.18"
+
+$ cd ../../ansible/
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.95.160 db_host=192.168.10.18
+
+[db]
+dbserver ansible_host=51.250.81.186
+
+$ ./inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.95.160"
+    ],
+    "vars": {
+      db_host: "192.168.10.18"
+    }
+  },
+  "db": {
+    "hosts": [
+      "51.250.81.186"
+    ]
+  }
+}
+
+$ ansible-playbook reddit_app_one_play.yml --limit app --tags app-tag
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [appserver]
+
+TASK [Add config for DB connection] ******************************************************************************
+changed: [appserver]
+
+TASK [Enable Puma] ***********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Deploy the application:
+```
+$ ansible-playbook reddit_app_one_play.yml --limit app --tags deploy-tag
+
+PLAY [Configure hosts & deploy application] **********************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Install Git] ***********************************************************************************************
+changed: [appserver]
+
+TASK [Fetch the latest version of application code] **************************************************************
+changed: [appserver]
+
+TASK [Bundle install] ********************************************************************************************
+ok: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.95.160:9292/ and check the application.
+
+Check the playbook with separated plays:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.79.219"
+external_ip_address_db = "51.250.93.216"
+internal_ip_address_db = "192.168.10.18
+
+$ cd ../../ansible
+
+$ ansible-playbook reddit_app_multiple_plays.yml
+
+PLAY [Configure MongoDB] *****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [dbserver]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [dbserver]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [dbserver]
+
+PLAY [Configure application] *************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [appserver]
+
+TASK [Add config for DB connection] ******************************************************************************
+changed: [appserver]
+
+TASK [Enable Puma] ***********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY [Deploy application] ****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Install Git] ***********************************************************************************************
+changed: [appserver]
+
+TASK [Fetch the latest version of application code] **************************************************************
+changed: [appserver]
+
+TASK [Bundle install] ********************************************************************************************
+changed: [appserver]
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+changed: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.79.219:9292/ and check the application.
+
+Check the splitted playbooks:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.83.235"
+external_ip_address_db = "51.250.79.18"
+internal_ip_address_db = "192.168.10.13"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.83.235:9292/ and check the application.
+
+Test [Yandex.Cloud inventory plugin](https://github.com/ansible/ansible/pull/61722) (I had to patch it in order to make it work):
+```
+$ pip install -r requirements.txt
+...
+Installing collected packages: pyjwt, protobuf, grpcio, googleapis-common-protos, yandexcloud
+Successfully installed googleapis-common-protos-1.56.3 grpcio-1.47.0 protobuf-4.21.2 pyjwt-2.4.0 yandexcloud-0.10.1
+
+$ ansible-inventory -i inventory_yc_compute.yml --playbook-dir ./ --vars --graph
+@all:
+  |--@app:
+  |  |--51.250.83.235
+  |  |  |--{ansible_host = 51.250.83.235}
+  |  |  |--{internal_ip = 192.168.10.27}
+  |--@db:
+  |  |--51.250.79.18
+  |  |  |--{ansible_host = 51.250.79.18}
+  |  |  |--{internal_ip = 192.168.10.13}
+  |--@ungrouped:
+
+```
+
+I don't use this inventory plugin for my playbooks because I parameterized the application host with the `db_host` variable (the internal IP of the DB host).  This plugin doesn't allow one host to be parameterized with some data from another host.
+```
+$ ansible-playbook -i inventory_yc_compute.yml site.yml --check
+
+PLAY [Configure MongoDB] *****************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [51.250.79.18]
+
+TASK [Change mongo config file] **********************************************************************************
+changed: [51.250.79.18]
+
+RUNNING HANDLER [restart mongod] *********************************************************************************
+changed: [51.250.79.18]
+
+PLAY [Configure application] *************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [51.250.83.235]
+
+TASK [Add unit file for Puma] ************************************************************************************
+changed: [51.250.83.235]
+
+TASK [Add config for DB connection] ******************************************************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: ansible.errors.AnsibleUndefinedVariable: 'db_host' is undefined
+fatal: [51.250.83.235]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'db_host' is undefined"}
+
+RUNNING HANDLER [reload puma] ************************************************************************************
+
+PLAY RECAP *******************************************************************************************************
+51.250.83.235              : ok=2    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+51.250.79.18               : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Useful links:
+
+- [Ansible Custom Inventory Plugin - a hands-on, quick start guide](https://termlen0.github.io/2019/11/16/observations/)
+
+Create base images for the DB and the application using Ansible for images provisioning:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+Destroy complete! Resources: 4 destroyed.
+
+$ cd ../../
+
+$ packer build -var-file=packer/variables.json packer/app.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-app-base-1656502406 (id: fd85on9l66kfloap9i9l) with family name reddit-app-base
+
+$ packer build -var-file=packer/variables.json packer/db.json
+...
+==> Builds finished. The artifacts of successful builds are:
+--> yandex: A disk image was created: reddit-db-base-1656503656 (id: fd8h8fuoqmepfmgfiqrr) with family name reddit-db-base
+
+$ yc compute image list
++----------------------+----------------------------+-----------------+----------------------+--------+
+|          ID          |            NAME            |     FAMILY      |     PRODUCT IDS      | STATUS |
++----------------------+----------------------------+-----------------+----------------------+--------+
+| fd84km3m351crgj9upkq | reddit-app-base-1655934193 | reddit-app-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd85on9l66kfloap9i9l | reddit-app-base-1656502406 | reddit-app-base | f2ej52ijfor6n4fg5v0f | READY  |
+| fd87q6i0re98bj8v6fgc | reddit-base-1655732400     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd89dv82hadttcirp1hr | reddit-base-1655736298     | reddit-base     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8a5el5f41qgp5qjd8p | reddit-full-1655742289     | reddit-full     | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8bvuaat05ogds90rte | reddit-db-base-1655933993  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
+| fd8h8fuoqmepfmgfiqrr | reddit-db-base-1656503656  | reddit-db-base  | f2ej52ijfor6n4fg5v0f | READY  |
++----------------------+----------------------------+-----------------+----------------------+--------+
+```
+
+Check the new images:
+```
+$ cd terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.94.92"
+external_ip_address_db = "51.250.71.20"
+internal_ip_address_db = "192.168.10.12"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.94.92:9292/ and check the application.
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+```
+
+- Useful links:
+
+- [Use different signature algorithm for SSH host key #69](https://github.com/hashicorp/packer-plugin-ansible/issues/69)
+- [ansible provisioner fails with "failed to transfer file" #11783](https://github.com/hashicorp/packer/issues/11783)
+- [Packer/Ansible: Unable to acquire dpkg lock](https://joelvasallo.com/packer-ansible-unable-to-acquire-dpkg-lock-c7eb5863127d)
+- [Ansible-lint warn 301 Commands should not change things if nothing needs doing #144](https://github.com/geerlingguy/ansible-role-certbot/issues/144)
+- [Ansible-lint - Rule 306](https://xan.manning.io/2019/03/21/ansible-lint-rule-306.html#:~:text=%5B306%5D%20Shells%20that%20use%20pipes,considered%20a%20success%20by%20Ansible.)
+
+</details>

@@ -1,6 +1,6 @@
 {
   "variables": {
-    "service_account_key_file": "../yc-svc-key.json",
+    "service_account_key_file": "yc-svc-key.json",
     "folder_id": null,
     "ssh_username": "ubuntu",
     "platform_id": "standard-v1"
@@ -28,12 +28,12 @@
     },
     {
       "type": "shell",
-      "script": "scripts/deploy.sh",
+      "script": "packer/scripts/deploy.sh",
       "execute_command": "sudo {{.Path}}"
     },
     {
       "type": "file",
-      "source": "files/puma-reddit.service",
+      "source": "packer/files/puma-reddit.service",
       "destination": "/tmp/"
     },
     {
