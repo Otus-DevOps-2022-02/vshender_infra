@@ -1,0 +1,16 @@
+---
+- name: Wait for /var/lib/dpkg/lock-frontend to be released
+  shell: set -o pipefail && while ps -ef | grep apt | grep -v grep > /dev/null; do sleep 5; done
+  changed_when: false
+  args:
+    executable: /bin/bash
+  tags: install
+
+- name: Install Ruby and Bundler
+  apt:
+    pkg:
+      - ruby-full
+      - ruby-bundler
+      - build-essential
+    update_cache: true
+  tags: install
