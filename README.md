@@ -1271,3 +1271,291 @@ $ cd ..
 ```
 
 </details>
+
+
+## Homework #10: ansible-1
+
+- Installed Ansible.
+- Created the `stage` infrastructure.
+- Added an inventory file.
+- Configured Ansible using the `ansible.cfg` file.
+- Added host groups.
+- Added a YAML inventory file.
+- Checked that the servers' components are installed.
+- Cloned the application repository to the app server.
+- Added the application cloning playbook.
+- Implemented an inventory file generation.
+- Added a dynamic inventory.
+
+<details><summary>Details</summary>
+
+Install Ansible:
+```
+$ cd ansible
+$ pip install -r requirements.txt
+...
+Successfully installed ansible-6.0.0
+```
+
+Create a staging environment:
+```
+$ cd ../terraform
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+$ cd stage
+
+$ terraform apply -auto-approve
+...
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.89.224"
+external_ip_address_db = "51.250.95.242"
+
+$ cd ../../ansible
+```
+
+Check the inventory file:
+```
+$ ansible appserver -i ./inventory -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+$ ansible dbserver -i ./inventory -m ping
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Check the configuration from the `ansible.cfg` file:
+```
+$ ansible appserver -m command -a uptime
+appserver | CHANGED | rc=0 >>
+ 14:26:37 up 11 min,  1 user,  load average: 0.00, 0.02, 0.03
+
+$ ansible dbserver -m command -a uptime
+dbserver | CHANGED | rc=0 >>
+ 14:26:57 up 11 min,  1 user,  load average: 0.08, 0.02, 0.01
+```
+
+Check the host group:
+```
+$ ansible app -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Check the YAML inventory:
+```
+$ ansible all -i inventory.yml -m ping
+appserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Check that the servers' components are installed:
+```
+$ ansible app -m command -a 'ruby -v'
+appserver | CHANGED | rc=0 >>
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+
+$ ansible app -m command -a 'bundler -v'
+appserver | CHANGED | rc=0 >>
+Bundler version 1.11.2
+
+$ ansible app -m command -a 'ruby -v; bundler -v'
+appserver | FAILED | rc=1 >>
+ruby: invalid option -;  (-h will show valid options) (RuntimeError)non-zero return code
+
+$ ansible app -m shell -a 'ruby -v; bundler -v'
+appserver | CHANGED | rc=0 >>
+ruby 2.3.1p112 (2016-04-26) [x86_64-linux-gnu]
+Bundler version 1.11.2
+
+$ ansible db -m command -a 'systemctl status mongod'
+dbserver | CHANGED | rc=0 >>
+● mongod.service - MongoDB Database Server
+   Loaded: loaded (/lib/systemd/system/mongod.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-06-26 14:15:50 UTC; 30min ago
+     Docs: https://docs.mongodb.org/manual
+ Main PID: 795 (mongod)
+   CGroup: /system.slice/mongod.service
+           └─795 /usr/bin/mongod --config /etc/mongod.conf
+
+Jun 26 14:15:50 fhm4434fmipdb6jqmbtg systemd[1]: Started MongoDB Database Server.
+
+$ ansible db -m systemd -a name=mongod
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "name": "mongod",
+    "status": {
+        ...
+        "ActiveState": "active",
+        ...
+    }
+}
+
+$ ansible db -m service -a name=mongod
+dbserver | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "name": "mongod",
+    "status": {
+        ...
+        "ActiveState": "active",
+        ...
+    }
+}
+```
+
+Clone the application repository:
+```
+$ ansible app -m git -a 'repo=https://github.com/express42/reddit.git dest=/home/ubuntu/reddit'
+appserver | SUCCESS => {
+    "after": "5c217c565c1122c5343dc0514c116ae816c17ca2",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "before": "5c217c565c1122c5343dc0514c116ae816c17ca2",
+    "changed": false,
+    "remote_url_changed": false
+}
+```
+
+Check the application cloning playbook:
+```
+$ ansible-playbook clone.yml
+
+PLAY [Clone] *****************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************
+ok: [appserver]
+
+TASK [Clone repo] ************************************************************************************************
+ok: [appserver]
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Generate an inventory file:
+```
+$ rm inventory
+
+$ cd ../terraform/stage
+
+$ terraform init -upgrade
+Upgrading modules...
+- app in ../modules/app
+- db in ../modules/db
+- vpc in ../modules/vpc
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/null...
+- Finding yandex-cloud/yandex versions matching "~> 0.73.0"...
+- Finding latest version of hashicorp/local...
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+- Using previously-installed hashicorp/null v3.1.1
+- Using previously-installed yandex-cloud/yandex v0.73.0
+...
+
+$ terraform apply -auto-approve
+...
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+local_file.generate_ansible_inventory: Creating...
+local_file.generate_ansible_inventory: Provisioning with 'local-exec'...
+local_file.generate_ansible_inventory (local-exec): Executing: ["/bin/sh" "-c" "chmod a-x ../../ansible/inventory"]
+local_file.generate_ansible_inventory: Creation complete after 0s [id=7eb16f96cbe45c891272af43cb47f94731fe54b8]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.89.224"
+external_ip_address_db = "51.250.95.242"
+
+$ cd ../../ansible
+
+$ cat inventory
+[app]
+appserver ansible_host=51.250.89.224
+
+[db]
+dbserver ansible_host=51.250.95.242
+```
+
+Check the dynamic inventory (uncomment the dynamic inventory file usage in `ansible.cfg`):
+```
+$ ./inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.89.224"
+    ]
+  },
+  "db": {
+    "hosts": [
+      "51.250.95.242"
+    ]
+  }
+}
+
+$ ansible all -m ping
+51.250.89.224 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+51.250.95.242 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Useful links:
+- [Динамическое инвентори в Ansible](https://nklya.medium.com/%D0%B4%D0%B8%D0%BD%D0%B0%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B8%D0%BD%D0%B2%D0%B5%D0%BD%D1%82%D0%BE%D1%80%D0%B8-%D0%B2-ansible-9ee880d540d6)
+
+</details>
