@@ -19,3 +19,7 @@ packer/variables.json
 
 *.pyc
 __pycache__
+
+ansible/roles/jdauphant.nginx
+
+vault.key

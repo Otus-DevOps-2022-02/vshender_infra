@@ -1978,3 +1978,282 @@ Destroy complete! Resources: 5 destroyed.
 - [Ansible-lint - Rule 306](https://xan.manning.io/2019/03/21/ansible-lint-rule-306.html#:~:text=%5B306%5D%20Shells%20that%20use%20pipes,considered%20a%20success%20by%20Ansible.)
 
 </details>
+
+
+## Homework #12: ansible-3
+
+- Created roles for the DB and the application configuration.
+- Configured the prod and the stage environments.
+- Made the application available on port 80 using `jdauphant.nginx` role.
+- Used Ansible Vault to store secrets.
+- Configured Github CI to run linters.
+
+<details><summary>Details</summary>
+
+Check the deployment with roles:
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.74.84"
+external_ip_address_db = "51.250.81.2"
+internal_ip_address_db = "192.168.10.8"
+
+$ cd ../../ansible
+
+$ ansible-playbook site.yml
+...
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=10   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Check the prod and stage environments deployment:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 4 destroyed.
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.88.81"
+external_ip_address_db = "51.250.86.134"
+internal_ip_address_db = "192.168.10.25"
+
+$ cd ../../ansible
+
+$ ansible-playbook -i environments/stage/inventory playbooks/site.yml
+
+PLAY [Configure MongoDB] **********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************
+ok: [dbserver]
+
+TASK [db : Show info about the env this host belongs to] ****************************************************
+ok: [dbserver] => {
+    "msg": "This host is in stage environment"
+}
+
+...
+
+PLAY RECAP *************************************************************************************************
+appserver                  : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+
+$ cd ../prod
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.70.10"
+external_ip_address_db = "51.250.86.36"
+internal_ip_address_db = "192.168.10.25"
+
+$ cd ../../ansible
+
+$ ansible-playbook -i environments/prod/inventory playbooks/site.yml
+
+PLAY [Configure MongoDB] **********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************
+ok: [dbserver]
+
+TASK [db : Show info about the env this host belongs to] ****************************************************
+ok: [dbserver] => {
+    "msg": "This host is in prod environment"
+}
+
+...
+
+PLAY RECAP *************************************************************************************************
+appserver                  : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+$ cd ../terraform/prod
+
+$ terraform destroy --auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+```
+
+Check the `jdauphant.nginx` role.
+```
+$ cd ../stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.70.10"
+external_ip_address_db = "51.250.74.115"
+internal_ip_address_db = "192.168.10.3"
+
+$ cd ../../ansible
+
+$ ansible-galaxy install -r environments/stage/requirements.yml
+Starting galaxy role install process
+- downloading role 'nginx', owned by jdauphant
+- downloading role from https://github.com/jdauphant/ansible-role-nginx/archive/v2.21.1.tar.gz
+- extracting jdauphant.nginx to /Users/vshender/.../vshender_infra/ansible/roles/jdauphant.nginx
+- jdauphant.nginx (v2.21.1) was installed successfully
+
+$ ansible-playbook -i environments/stage/inventory playbooks/site.yml
+...
+
+PLAY RECAP *******************************************************************************************************
+appserver                  : ok=28   changed=19   unreachable=0    failed=0    skipped=17   rescued=0    ignored=0
+dbserver                   : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Open http://51.250.70.10/ and check the application.
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+```
+
+Encrypt users info:
+```
+$ cd ../../ansible
+
+$ ansible-vault encrypt environments/prod/credentials.yml
+Encryption successful
+
+$ ansible-vault encrypt environments/stage/credentials.yml
+Encryption successful
+```
+
+Check that users are created on deployment:
+```
+$ cd ../terraform/stage
+
+$ terraform apply -auto-approve
+...
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+external_ip_address_app = "51.250.65.251"
+external_ip_address_db = "51.250.1.5"
+internal_ip_address_db = "192.168.10.22"
+
+$ cd ../../ansible
+
+$ pip install -r requirements.txt
+...
+Successfully installed passlib-1.7.4
+
+$ ansible-playbook playbooks/site.yml
+...
+
+$ ssh -i ~/.ssh/appuser ubuntu@51.250.65.251
+...
+ubuntu@fhmvuv8v3jit0qahatlu:~$ cat /etc/passwd
+...
+ubuntu:x:1000:1001:Ubuntu:/home/ubuntu:/bin/bash
+admin:x:1001:1002::/home/admin:
+qauser:x:1002:1003::/home/qauser:
+
+ubuntu@fhmvuv8v3jit0qahatlu:~$ cat /etc/group
+...
+ubuntu:x:1001:
+admin:x:1002:
+qauser:x:1003:
+
+ubuntu@fhmvuv8v3jit0qahatlu:~$ exit
+logout
+Connection to 51.250.65.251 closed.
+
+$ ssh -i ~/.ssh/appuser ubuntu@51.250.1.5
+...
+ubuntu@fhm0f43budki7i44u58o:~$ cat /etc/passwd
+...
+ubuntu:x:1000:1001:Ubuntu:/home/ubuntu:/bin/bash
+mongodb:x:108:65534::/home/mongodb:/bin/false
+admin:x:1001:1002::/home/admin:
+qauser:x:1002:1003::/home/qauser:
+
+ubuntu@fhm0f43budki7i44u58o:~$ cat /etc/group
+...
+ubuntu:x:1001:
+mongodb:x:112:mongodb
+admin:x:1002:
+qauser:x:1003:
+
+ubuntu@fhm0f43budki7i44u58o:~$ exit
+logout
+Connection to 51.250.1.5 closed.
+```
+
+Check that the dynamic inventory works:
+```
+$ environments/stage/inventory.sh --list
+{
+  "app": {
+    "hosts": [
+      "51.250.65.251"
+    ],
+    "vars": {
+      "db_host": "192.168.10.22"
+    }
+  },
+  "db": {
+    "hosts": [
+      "51.250.1.5"
+    ]
+  }
+}
+
+$ ansible-playbook -i environments/stage/inventory.sh playbooks/site.yml
+...
+PLAY RECAP *******************************************************************************************************
+51.250.1.5                 : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+51.250.65.251              : ok=23   changed=0    unreachable=0    failed=0    skipped=17   rescued=0    ignored=0
+```
+
+Destroy the infrastructure:
+```
+$ cd ../terraform/stage
+
+$ terraform destroy -auto-approve
+...
+
+Destroy complete! Resources: 5 destroyed.
+```
+
+</details>

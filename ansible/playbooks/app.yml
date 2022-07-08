@@ -1,0 +1,12 @@
+---
+- name: Configure application
+  hosts: app
+  become: true
+  roles:
+    - app
+    - role: jdauphant.nginx
+      nginx_sites:
+        default:
+          - server_name {{ app_nginx.server_name }}
+          - listen {{ app_nginx.port }}
+          - location / { proxy_pass http://127.0.0.1:9292; }
